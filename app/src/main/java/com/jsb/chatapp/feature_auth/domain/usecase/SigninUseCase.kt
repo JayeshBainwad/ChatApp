@@ -9,8 +9,11 @@ class SigninUseCase @Inject constructor(
     private val repository: AuthRepository
 ) {
     suspend operator fun invoke(email: String, password: String): Result<User> {
-        if (email.isBlank() || password.isBlank()) {
-            return Result.Error(Exception("Email and password cannot be empty"))
+        if (email.isBlank()) {
+            return Result.Error(Exception("Email cannot be empty"))
+        }
+        if (password.isBlank()) {
+            return Result.Error(Exception("Password cannot be empty"))
         }
         return repository.signin(email, password)
     }

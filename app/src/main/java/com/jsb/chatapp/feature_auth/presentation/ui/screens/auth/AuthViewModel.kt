@@ -21,6 +21,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import com.jsb.chatapp.util.Result
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
@@ -33,6 +37,7 @@ class AuthViewModel @Inject constructor(
     private val _state = MutableStateFlow(AuthState())
     val state: StateFlow<AuthState> = _state.asStateFlow()
 
+    private var usernameCheckJob: Job? = null
     private val _usernameAvailable = MutableStateFlow<Boolean?>(null)
     val usernameAvailable: StateFlow<Boolean?> = _usernameAvailable
 
@@ -49,6 +54,11 @@ class AuthViewModel @Inject constructor(
         _currentUser.value = user
         Log.d("AuthViewModel", "AuthStateListener triggered. Current User: ${user?.displayName ?: "null"} | UID: ${user?.uid ?: "null"}")
     }
+
+    private val _uiEvent = MutableSharedFlow<UiEvent>()
+    val uiEvent = _uiEvent.asSharedFlow()
+
+
 
     init {
         auth.addAuthStateListener(authStateListener)
@@ -126,6 +136,78 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    private fun signup() {
+        viewModelScope.launch {
+            Log.d("AuthViewModel", "Starting sign-up with email: ${state.value.email}, username: ${state.value.username}")
+            _state.update { it.copy(isLoading = true) }
+            val result = signupUseCase(state.value.email, state.value.password, state.value.username)
+            when (result) {
+                is Result.Success -> {
+                    Log.d("AuthViewModel", "Sign-up successful")
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            isAuthenticated = true,
+                            error = null
+                        )
+                    }
+                    _uiEvent.emit(UiEvent.ShowSnackbar("Sign-up successful! Welcome ${state.value.username ?: ""}"))
+                }
+
+                is Result.Error -> {
+                    Log.e("AuthViewModel", "Sign-up failed", result.exception)
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = result.exception.message
+                        )
+                    }
+                    _uiEvent.emit(UiEvent.ShowSnackbar(result.exception.message ?: "Unknown error"))
+                }
+            }
+        }
+    }
+
+    private fun signin() {
+        viewModelScope.launch {
+            Log.d("AuthViewModel", "Starting sign-in with email: ${state.value.email}")
+            _state.update { it.copy(isLoading = true) }
+            val result = SigninUseCase(state.value.email, state.value.password)
+
+            when (result) {
+                is Result.Success -> {
+                    val user = FirebaseAuth.getInstance().currentUser
+                    Log.d("AuthViewModel", "Sign-in successful, user: ${user?.uid}, email: ${user?.email}")
+                    _state.update { currentState ->
+                        if (currentState.rememberMe) {
+                            viewModelScope.launch {
+                                userPreferences.saveRememberMe(true)
+                                Log.d("AuthViewModel", "Saved rememberMe: true")
+                            }
+                        }
+                        currentState.copy(
+                            isLoading = false,
+                            isAuthenticated = true,
+                            error = null
+                        )
+                    }
+                    _uiEvent.emit(UiEvent.ShowSnackbar("Sign-in successful! Welcome ${state.value.username ?: ""}"))
+                }
+                is Result.Error -> {
+                    Log.e("AuthViewModel", "Sign-in failed", result.exception)
+                    _state.update { currentState ->
+                        currentState.copy(
+                            isLoading = false,
+                            error = result.exception.message
+                        )
+                    }
+                    _uiEvent.emit(UiEvent.ShowSnackbar(result.exception.message ?: "Unknown error"))
+                }
+            }
+
+        }
+    }
+
     private fun sendPasswordResetEmail() {
         viewModelScope.launch {
             val email = state.value.email
@@ -145,80 +227,21 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private fun signin() {
-        viewModelScope.launch {
-            Log.d("AuthViewModel", "Starting sign-in with email: ${state.value.email}")
-            _state.update { it.copy(isLoading = true) }
-            val result = SigninUseCase(state.value.email, state.value.password)
-            _state.update { currentState ->
-                when (result) {
-                    is Result.Success -> {
-                        val user = FirebaseAuth.getInstance().currentUser
-                        Log.d("AuthViewModel", "Sign-in successful, user: ${user?.uid}, email: ${user?.email}")
-                        if (currentState.rememberMe) {
-                            viewModelScope.launch {
-                                userPreferences.saveRememberMe(true)
-                                Log.d("AuthViewModel", "Saved rememberMe: true")
-                            }
-                        }
-                        currentState.copy(
-                            isLoading = false,
-                            isAuthenticated = true,
-                            error = null
-                        )
-                    }
-                    is Result.Error -> {
-                        Log.e("AuthViewModel", "Sign-in failed", result.exception)
-                        currentState.copy(
-                            isLoading = false,
-                            error = result.exception.message
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    private fun signup() {
-        viewModelScope.launch {
-            Log.d("AuthViewModel", "Starting sign-up with email: ${state.value.email}, username: ${state.value.username}")
-            _state.update { it.copy(isLoading = true) }
-            val result = signupUseCase(state.value.email, state.value.password, state.value.username)
-            _state.update { currentState ->
-                when (result) {
-                    is Result.Success -> {
-                        val user = FirebaseAuth.getInstance().currentUser
-                        Log.d("AuthViewModel", "Sign-up successful, user: ${user?.uid}, email: ${user?.email}")
-                        currentState.copy(
-                            isLoading = false,
-                            isAuthenticated = true,
-                            error = null
-                        )
-                    }
-                    is Result.Error -> {
-                        Log.e("AuthViewModel", "Sign-up failed", result.exception)
-                        currentState.copy(
-                            isLoading = false,
-                            error = result.exception.message
-                        )
-                    }
-                }
-            }
+    fun checkUsernameAvailabilityDebounced(username: String) {
+        usernameCheckJob?.cancel() // Cancel the previous job
+        usernameCheckJob = viewModelScope.launch {
+            delay(500) // Debounce delay
+            val isAvailable = isUsernameAvailable(username)
+            _usernameAvailable.value = isAvailable
         }
     }
 
     private suspend fun isUsernameAvailable(username: String): Boolean {
-        val doc = FirebaseFirestore.getInstance()
-            .collection("usernames")
-            .document(username)
+        val snapshot = FirebaseFirestore.getInstance()
+            .collection("users")
+            .whereEqualTo("username", username)
             .get()
             .await()
-        return !doc.exists()
-    }
-
-    fun checkUsernameAvailability(username: String) {
-        viewModelScope.launch {
-            _usernameAvailable.value = isUsernameAvailable(username)
-        }
+        return snapshot.isEmpty
     }
 }

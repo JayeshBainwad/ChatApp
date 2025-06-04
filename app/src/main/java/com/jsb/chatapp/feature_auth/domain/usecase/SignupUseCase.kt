@@ -1,8 +1,10 @@
 package com.jsb.chatapp.feature_auth.domain.usecase
 
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.jsb.chatapp.util.Result
 import com.jsb.chatapp.feature_auth.data.repository.AuthRepository
 import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.AuthViewModel
 import javax.inject.Inject
 
 class SignupUseCase @Inject constructor(
@@ -15,6 +17,15 @@ class SignupUseCase @Inject constructor(
         if (password.length < 6) {
             return Result.Error(Exception("Password must be at least 6 characters"))
         }
+        if (username.length < 3) {
+            return Result.Error(Exception("Username must be at least 3 characters"))
+        }
+
+        val isAvailable = repository.isUsernameAvailable(username)
+        if (!isAvailable) {
+            return Result.Error(Exception("'$username' is already taken"))
+        }
+
         return repository.signup(email, password, username)
     }
 }

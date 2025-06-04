@@ -4,6 +4,7 @@ import com.jsb.chatapp.feature_auth.domain.model.User
 import com.jsb.chatapp.util.Result
 
 interface AuthDataSource {
-    suspend fun login(email: String, password: String): Result<User>
+    suspend fun signin(email: String, password: String): Result<User>
     suspend fun signup(email: String, password: String, username: String): Result<User>
+    suspend fun isUsernameAvailable(username: String): Boolean
 }

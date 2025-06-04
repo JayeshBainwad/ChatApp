@@ -13,7 +13,7 @@ class AuthDataSourceImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : AuthDataSource {
 
-    override suspend fun login(email: String, password: String): Result<User> = try {
+    override suspend fun signin(email: String, password: String): Result<User> = try {
         val result = auth.signInWithEmailAndPassword(email, password).await()
         val user = result.user?.let {
             firestore.collection("users").document(it.uid).get().await()
@@ -48,4 +48,12 @@ class AuthDataSourceImpl @Inject constructor(
         Result.Error(e)
     }
 
+    override suspend fun isUsernameAvailable(username: String): Boolean {
+        val snapshot = firestore
+            .collection("users")
+            .whereEqualTo("username", username)
+            .get()
+            .await()
+        return snapshot.isEmpty
+    }
 }

@@ -1,5 +1,6 @@
 package com.jsb.chatapp.feature_auth.presentation.ui.screens.auth
 
+import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
@@ -25,8 +26,10 @@ import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.components.Auth
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.components.GoogleAuthButton
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.components.OrSignInWithDivider
 import com.jsb.chatapp.theme.ChatAppTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SignupScreen(
     navController: NavHostController,
@@ -44,130 +47,149 @@ fun SignupScreen(
 
     LaunchedEffect(state.isAuthenticated) {
         if (state.isAuthenticated) {
+            delay(1000)
             navController.navigate(Screen.Chat.createRoute("default")) {
                 popUpTo(Screen.Signin.route) { inclusive = true }
             }
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Register your account!",
-            fontSize = MaterialTheme.typography.headlineLarge.fontSize,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier
-                .padding(bottom = 16.dp),
-            textAlign = TextAlign.Start
-        )
+    val snackbarHostState = remember { SnackbarHostState() }
+    val uiEvent = viewModel.uiEvent
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "Welcome to ChatApp – your space to connect, share, and stay in touch with the people who matter most.",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Normal,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier
-                .padding(bottom = 16.dp),
-            textAlign = TextAlign.Start
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        AuthTextField(
-            value = state.email,
-            onValueChange = { viewModel.onEvent(AuthEvent.UpdateEmail(it)) },
-            label = "Email"
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        AuthTextField(
-            value = state.username,
-            onValueChange = {
-                viewModel.onEvent(AuthEvent.UpdateUsername(it))
-                viewModel.checkUsernameAvailability(it)
-            },
-            label = "Username",
-            isError = usernameAvailable == false,
-            errorMessage = if (usernameAvailable == false) "Username is already taken" else null
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        AuthTextField(
-            value = state.password,
-            onValueChange = { viewModel.onEvent(AuthEvent.UpdatePassword(it)) },
-            label = "Password",
-            isPassword = true
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(
-                checked = state.rememberMe,
-                onCheckedChange = { viewModel.onEvent(AuthEvent.ToggleRememberMe(it)) }
-            )
-            Text(
-                text = "Remember me",
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 14.sp
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        AuthButton(
-            onClick = { viewModel.onEvent(AuthEvent.Signup) },
-            value = "Sign up",
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !state.isLoading
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OrSignInWithDivider(
-            text = "Or sign up with"
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Google Sign-In Button
-        GoogleAuthButton(
-            onClick = {
-                viewModel.viewModelScope.launch {
-                    val intentSender = viewModel.launchGoogleSignIn()
-                    intentSender?.let {
-                        launcher.launch(
-                            IntentSenderRequest.Builder(it).build()
-                        )
-                    }
+    LaunchedEffect(key1 = true) {
+        uiEvent.collect { event ->
+            when (event) {
+                is UiEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(event.message)
                 }
-            },
-            value = "Continue with Google",
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !state.isLoading
-        )
+            }
+        }
+    }
 
-        Spacer(modifier = Modifier.height(8.dp))
-        TextButton(
-            onClick = { navController.navigate(Screen.Signin.route) },
-            modifier = Modifier.fillMaxWidth()
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.background)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Already have an account? Sign in")
-        }
-        if (state.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-        }
+            Text(
+                text = "Register your account!",
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier
+                    .padding(bottom = 16.dp),
+                textAlign = TextAlign.Start
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Welcome to ChatApp – your space to connect, share, and stay in touch with the people who matter most.",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier
+                    .padding(bottom = 16.dp),
+                textAlign = TextAlign.Start
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            AuthTextField(
+                value = state.email,
+                onValueChange = { viewModel.onEvent(AuthEvent.UpdateEmail(it)) },
+                label = "Email"
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            AuthTextField(
+                value = state.username,
+                onValueChange = {
+                    viewModel.onEvent(AuthEvent.UpdateUsername(it))
+                    viewModel.checkUsernameAvailabilityDebounced(it)
+                },
+                label = "Username",
+                isError = usernameAvailable == false,
+                errorMessage = if (usernameAvailable == false) "${state.username} is already taken" else null
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            AuthTextField(
+                value = state.password,
+                onValueChange = { viewModel.onEvent(AuthEvent.UpdatePassword(it)) },
+                label = "Password",
+                isPassword = true
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = state.rememberMe,
+                    onCheckedChange = { viewModel.onEvent(AuthEvent.ToggleRememberMe(it)) }
+                )
+                Text(
+                    text = "Remember me",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 14.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            AuthButton(
+                onClick = { viewModel.onEvent(AuthEvent.Signup) },
+                value = "Sign up",
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !state.isLoading
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OrSignInWithDivider(
+                text = "Or sign up with"
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Google Sign-In Button
+            GoogleAuthButton(
+                onClick = {
+                    viewModel.viewModelScope.launch {
+                        val intentSender = viewModel.launchGoogleSignIn()
+                        intentSender?.let {
+                            launcher.launch(
+                                IntentSenderRequest.Builder(it).build()
+                            )
+                        }
+                    }
+                },
+                value = "Continue with Google",
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !state.isLoading
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+            TextButton(
+                onClick = { navController.navigate(Screen.Signin.route) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Already have an account? Sign in")
+            }
+            if (state.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
 //        state.error?.let {
 //            Text(
 //                text = it,
@@ -175,7 +197,10 @@ fun SignupScreen(
 //                modifier = Modifier.padding(top = 8.dp)
 //            )
 //        }
+        }
     }
+
+
 }
 
 @PreviewLightDark
