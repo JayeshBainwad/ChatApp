@@ -33,6 +33,7 @@ fun SignInScreen(
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             result.data?.let { intent ->
@@ -40,6 +41,14 @@ fun SignInScreen(
             }
         }
     }
+
+//    LaunchedEffect(currentUser?.uid != null) {
+//        if (currentUser?.uid != null) {
+//            navController.navigate(Screen.Chat.createRoute("default")) {
+//                popUpTo(Screen.Signin.route) { inclusive = true }
+//            }
+//        }
+//    }
 
     LaunchedEffect(state.isAuthenticated) {
         if (state.isAuthenticated) {
@@ -87,7 +96,7 @@ fun SignInScreen(
             label = "Email"
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         AuthTextField(
             value = state.password,
@@ -95,6 +104,36 @@ fun SignInScreen(
             label = "Password",
             isPassword = true
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = state.rememberMe,
+                    onCheckedChange = { viewModel.onEvent(AuthEvent.ToggleRememberMe(it)) }
+                )
+                Text(
+                    text = "Remember me",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 14.sp
+                )
+            }
+
+            TextButton(onClick = { viewModel.onEvent(AuthEvent.ForgotPassword) }) {
+                Text(
+                    text = "Forgot Password?",
+                    fontSize = 14.sp
+                )
+            }
+        }
+
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -140,13 +179,6 @@ fun SignInScreen(
         if (state.isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         }
-//        state.error?.let {
-//            Text(
-//                text = it,
-//                color = MaterialTheme.colorScheme.error,
-//                modifier = Modifier.padding(top = 8.dp)
-//            )
-//        }
     }
 }
 

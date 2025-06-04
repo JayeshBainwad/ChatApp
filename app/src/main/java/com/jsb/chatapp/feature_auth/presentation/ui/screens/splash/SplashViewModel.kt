@@ -1,27 +1,21 @@
-package com.jsb.chatapp.feature_chat.presentation.ui.screens.chat
+package com.jsb.chatapp.feature_auth.presentation.ui.screens.splash
 
 import android.annotation.SuppressLint
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import com.jsb.chatapp.feature_auth.domain.model.User
-import com.jsb.chatapp.feature_auth.presentation.utils.UserPreferences
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.util.Log
-import androidx.compose.runtime.State
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 
 @HiltViewModel
-class ChatViewModel @Inject constructor(
-    private val userPreferences: UserPreferences,
+class SplashViewModel @Inject constructor(
     private val firebaseAuth: FirebaseAuth
-) : ViewModel() {
-
+): ViewModel() {
     private val _firestoreUser = mutableStateOf<User?>(null)
     val firestoreUser: State<User?> = _firestoreUser
 
@@ -32,7 +26,7 @@ class ChatViewModel @Inject constructor(
     @SuppressLint("SuspiciousIndentation")
     private fun fetchCurrentUserFromFirestore() {
         val uid = firebaseAuth.currentUser?.uid ?: return
-          Firebase.firestore.collection("users").document(uid)
+        Firebase.firestore.collection("users").document(uid)
             .get()
             .addOnSuccessListener { doc ->
                 if (doc.exists()) {
@@ -44,13 +38,5 @@ class ChatViewModel @Inject constructor(
             .addOnFailureListener { e ->
                 Log.e("ChatViewModel", "Error fetching user doc", e)
             }
-    }
-
-    fun logout(onLoggedOut: () -> Unit) {
-        viewModelScope.launch {
-            FirebaseAuth.getInstance().signOut()
-            userPreferences.clearRememberMe()
-            onLoggedOut() // Trigger navigation after logout
-        }
     }
 }

@@ -1,40 +1,85 @@
 package com.jsb.chatapp.feature_auth.presentation.ui.screens.splash
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.jsb.chatapp.R
 import com.jsb.chatapp.Screen
+import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.AuthViewModel
+import com.jsb.chatapp.feature_auth.presentation.utils.UserPreferences
+import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.ChatViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(navController: NavHostController) {
+fun SplashScreen(
+    navController: NavController,
+    snackbarHostState: SnackbarHostState,
+    viewModel: SplashViewModel = hiltViewModel()
+) {
+    val authViewModel: AuthViewModel = hiltViewModel()
+    val user by authViewModel.currentUser.collectAsState()
+    val context = LocalContext.current
+    val rememberMeFlow = remember { UserPreferences(context).rememberMeFlow }
+
+    var rememberMe by remember { mutableStateOf(false) }
+
+    val firestoreUser = viewModel.firestoreUser.value
+
+    // Collect the Remember Me value from DataStore
     LaunchedEffect(Unit) {
-        delay(2000) // 2-second delay
-        navController.navigate(Screen.Signin.route) {
-            popUpTo("splash") { inclusive = true }
+        rememberMeFlow.collect { value ->
+            rememberMe = value
+            Log.d("SplashScreen", "RememberMe = $value")
         }
     }
-    Box(
+
+    // Navigate based on user and Remember Me
+    LaunchedEffect(user, rememberMe) {
+        delay(2000L) // Optional delay for splash effect
+        if (user != null && rememberMe) {
+            Log.d("SplashNav", "User ${firestoreUser?.username} authenticated and RememberMe is true")
+
+            navController.navigate(Screen.Chat.createRoute("default")) {
+                popUpTo(Screen.Splash.route) { inclusive = true }
+            }
+        } else {
+            Log.d("SplashNav", "Redirecting to SignIn: User=${user != null}, RememberMe=$rememberMe")
+
+            navController.navigate(Screen.Signin.route) {
+                popUpTo(Screen.Splash.route) { inclusive = true }
+            }
+        }
+    }
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Image(
             painter = painterResource(R.drawable.ic_app_logo),
             contentDescription = "App Logo",
-            modifier = Modifier.size(100.dp)
+            modifier = Modifier
+                .clip(shape = RoundedCornerShape(percent = 40))
+                .size(180.dp)
         )
     }
 }

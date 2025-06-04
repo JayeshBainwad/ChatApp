@@ -88,7 +88,7 @@ fun SignupScreen(
             label = "Email"
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         AuthTextField(
             value = state.username,
@@ -101,7 +101,7 @@ fun SignupScreen(
             errorMessage = if (usernameAvailable == false) "Username is already taken" else null
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         AuthTextField(
             value = state.password,
@@ -109,6 +109,20 @@ fun SignupScreen(
             label = "Password",
             isPassword = true
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = state.rememberMe,
+                onCheckedChange = { viewModel.onEvent(AuthEvent.ToggleRememberMe(it)) }
+            )
+            Text(
+                text = "Remember me",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 14.sp
+            )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 

@@ -5,7 +5,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.jsb.chatapp.feature_auth.domain.model.User
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
-import com.jsb.chatapp.core.util.Result
+import com.jsb.chatapp.util.Result
 import android.util.Log
 
 class AuthDataSourceImpl @Inject constructor(
@@ -28,7 +28,17 @@ class AuthDataSourceImpl @Inject constructor(
     override suspend fun signup(email: String, password: String, username: String): Result<User> = try {
         val result = auth.createUserWithEmailAndPassword(email, password).await()
         val user = result.user?.let {
-            val newUser = User(uid = it.uid, email = email, username = username, createdAt = System.currentTimeMillis())
+            val newUser = User(
+                uid = it.uid,
+                username = username,
+                name = "", // Optional: or collect a real name in UI
+                email = email,
+                avatarUrl = "",
+                phoneNumber = it.phoneNumber,
+                bio = "",
+                lastSeen = System.currentTimeMillis(),
+                createdAt = System.currentTimeMillis()
+            )
             firestore.collection("users").document(it.uid).set(newUser).await()
             newUser
         }
@@ -37,4 +47,5 @@ class AuthDataSourceImpl @Inject constructor(
         Log.e("AuthDataSourceImpl", "Signup error", e)
         Result.Error(e)
     }
+
 }
