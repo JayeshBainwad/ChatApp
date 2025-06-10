@@ -230,7 +230,7 @@ class AuthViewModel @Inject constructor(
     fun checkUsernameAvailabilityDebounced(username: String) {
         usernameCheckJob?.cancel() // Cancel the previous job
         usernameCheckJob = viewModelScope.launch {
-            delay(500) // Debounce delay
+//            delay(500) // Debounce delay
             val isAvailable = isUsernameAvailable(username)
             _usernameAvailable.value = isAvailable
         }

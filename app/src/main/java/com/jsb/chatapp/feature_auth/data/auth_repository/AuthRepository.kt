@@ -1,6 +1,5 @@
-package com.jsb.chatapp.feature_auth.data.repository
+package com.jsb.chatapp.feature_auth.data.auth_repository
 
-import com.google.firebase.auth.FirebaseUser
 import com.jsb.chatapp.util.Result
 import com.jsb.chatapp.feature_auth.domain.model.User
 

@@ -75,6 +75,7 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation (libs.play.services.auth)
     implementation (libs.androidx.datastore.preferences)
+    implementation(libs.firebase.messaging.ktx)
     // Navigation Compose
     implementation(libs.navigation.compose)
     // Coroutines for asynchronous operations

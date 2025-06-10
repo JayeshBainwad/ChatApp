@@ -1,6 +1,6 @@
-package com.jsb.chatapp.feature_auth.data.repository
+package com.jsb.chatapp.feature_auth.data.auth_repository
 
-import com.jsb.chatapp.feature_auth.data.datasource.AuthDataSource
+import com.jsb.chatapp.feature_auth.data.auth_datasource.AuthDataSource
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(

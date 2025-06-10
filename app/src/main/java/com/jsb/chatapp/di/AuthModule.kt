@@ -5,18 +5,24 @@ import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.jsb.chatapp.feature_auth.data.datasource.AuthDataSource
-import com.jsb.chatapp.feature_auth.data.datasource.AuthDataSourceImpl
-import com.jsb.chatapp.feature_auth.data.repository.AuthRepository
-import com.jsb.chatapp.feature_auth.data.repository.AuthRepositoryImpl
+import com.jsb.chatapp.feature_auth.data.auth_datasource.AuthDataSource
+import com.jsb.chatapp.feature_auth.data.auth_datasource.AuthDataSourceImpl
+import com.jsb.chatapp.feature_auth.data.auth_repository.AuthRepository
+import com.jsb.chatapp.feature_auth.data.auth_repository.AuthRepositoryImpl
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.GoogleAuthUiClient
 import com.jsb.chatapp.feature_auth.presentation.utils.UserPreferences
+import com.jsb.chatapp.feature_chat.data.chat_datasource.ChatDatasource
+import com.jsb.chatapp.feature_chat.data.chat_datasource.ChatDatasourceImpl
+import com.jsb.chatapp.feature_chat.data.chat_repository.ChatRepository
+import com.jsb.chatapp.feature_chat.data.chat_repository.ChatRepositoryImpl
+import com.jsb.chatapp.feature_chat.domain.usecase.ChatUseCases
+import com.jsb.chatapp.feature_chat.domain.usecase.GetChatsForUserUseCase
+import com.jsb.chatapp.feature_chat.domain.usecase.ListenForMessagesUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ActivityRetainedScoped
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -35,6 +41,18 @@ abstract class AuthModule {
     abstract fun bindAuthDataSource(
         authDataSourceImpl: AuthDataSourceImpl
     ): AuthDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindChatRepository(
+        chatRepositoryImpl: ChatRepositoryImpl
+    ): ChatRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindChatDataSource(
+        chatDatasourceImpl: ChatDatasourceImpl
+    ): ChatDatasource
 
     companion object {
         @Provides
@@ -69,5 +87,18 @@ abstract class AuthModule {
         fun provideUserPreferences(@ApplicationContext context: Context): UserPreferences {
             return UserPreferences(context)
         }
+
+        @Provides
+        @Singleton
+        fun provideChatUseCases(
+            getChatsForUser: GetChatsForUserUseCase,
+            listenForMessages: ListenForMessagesUseCase
+        ): ChatUseCases {
+            return ChatUseCases(
+                getChatsForUser = getChatsForUser,
+                listenForMessages = listenForMessages
+            )
+        }
+
     }
 }

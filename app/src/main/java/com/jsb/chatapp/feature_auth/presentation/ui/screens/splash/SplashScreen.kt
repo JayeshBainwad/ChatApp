@@ -4,12 +4,9 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,7 +20,6 @@ import com.jsb.chatapp.R
 import com.jsb.chatapp.Screen
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.AuthViewModel
 import com.jsb.chatapp.feature_auth.presentation.utils.UserPreferences
-import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.ChatViewModel
 import kotlinx.coroutines.delay
 
 @Composable
@@ -55,9 +51,7 @@ fun SplashScreen(
         if (user != null && rememberMe) {
             Log.d("SplashNav", "User ${firestoreUser?.username} authenticated and RememberMe is true")
 
-            navController.navigate(Screen.Chat.createRoute("default")) {
-                popUpTo(Screen.Splash.route) { inclusive = true }
-            }
+            navController.navigate(Screen.ChatHome.route)
         } else {
             Log.d("SplashNav", "Redirecting to SignIn: User=${user != null}, RememberMe=$rememberMe")
 

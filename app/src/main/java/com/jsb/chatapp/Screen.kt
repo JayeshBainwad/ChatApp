@@ -4,7 +4,8 @@ sealed class Screen(val route: String) {
     object Splash : Screen("splash")
     object Signin : Screen("signin")
     object Signup : Screen("signup")
-    object Chat : Screen("chat/{chatId}") {
-        fun createRoute(chatId: String) = "chat/$chatId"
-    }
+
+    object ChatHome : Screen("chathome")
+
+    object Chat : Screen("chat") // simple route, no parameters
 }

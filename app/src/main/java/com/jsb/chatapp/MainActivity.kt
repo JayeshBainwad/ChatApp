@@ -1,31 +1,30 @@
 package com.jsb.chatapp
 
+import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.Text
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.FirebaseAuth
-import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.GoogleAuthUiClient
+import androidx.navigation.navArgument
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.SignInScreen
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.SignupScreen
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.splash.SplashScreen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.ChatScreen
+import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home.ChatHomeScreen
 import com.jsb.chatapp.theme.ChatAppTheme
+import com.jsb.chatapp.util.SharedChatUserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 //@AndroidEntryPoint
@@ -61,6 +60,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @SuppressLint("UnrememberedGetBackStackEntry")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -89,11 +89,31 @@ class MainActivity : ComponentActivity() {
                                 SignupScreen(navController)
                             }
 
-                            composable(Screen.Chat.route) { backStackEntry ->
-                                ChatScreen(
-                                    chatId = backStackEntry.arguments?.getString("chatId") ?: "default",
-                                    navController = navController
-                                )
+                            composable(route = Screen.ChatHome.route) {
+                                ChatHomeScreen(navController = navController)
+                            }
+
+                            composable(Screen.Chat.route) {
+                                val parentEntry = remember {
+                                    navController.getBackStackEntry(Screen.ChatHome.route)
+                                }
+                                val sharedUserViewModel: SharedChatUserViewModel = hiltViewModel(parentEntry)
+
+                                val currentUser = sharedUserViewModel.currentUser
+                                val otherUser = sharedUserViewModel.otherUser
+
+                                if (currentUser != null && otherUser != null) {
+                                    val chatId = listOf(currentUser.uid, otherUser.uid).sorted().joinToString("_")
+
+                                    ChatScreen(
+                                        chatId = chatId,
+                                        currentUser = currentUser,
+                                        otherUser = otherUser,
+                                        navController = navController
+                                    )
+                                } else {
+                                    Text("Invalid chat data")
+                                }
                             }
                         }
                     }

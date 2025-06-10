@@ -47,9 +47,7 @@ fun SignInScreen(
     LaunchedEffect(state.isAuthenticated) {
         if (state.isAuthenticated) {
             delay(1000)
-            navController.navigate(Screen.Chat.createRoute("default")) {
-                popUpTo(Screen.Signin.route) { inclusive = true }
-            }
+            navController.navigate(Screen.ChatHome.route)
         }
     }
 

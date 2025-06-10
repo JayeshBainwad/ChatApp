@@ -1,4 +1,4 @@
-package com.jsb.chatapp.feature_auth.data.datasource
+package com.jsb.chatapp.feature_auth.data.auth_datasource
 
 import com.jsb.chatapp.feature_auth.domain.model.User
 import com.jsb.chatapp.util.Result

@@ -1,56 +1,76 @@
 package com.jsb.chatapp.feature_chat.presentation.ui.screens.chat
 
-import android.annotation.SuppressLint
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
-import com.jsb.chatapp.feature_auth.domain.model.User
-import com.jsb.chatapp.feature_auth.presentation.utils.UserPreferences
+import com.jsb.chatapp.feature_chat.data.chat_repository.ChatRepository
+import com.jsb.chatapp.feature_chat.domain.model.Message
+import com.jsb.chatapp.feature_chat.domain.model.MessageStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import android.util.Log
-import androidx.compose.runtime.State
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
-    private val userPreferences: UserPreferences,
-    private val firebaseAuth: FirebaseAuth
+    private val repository: ChatRepository
 ) : ViewModel() {
 
-    private val _firestoreUser = mutableStateOf<User?>(null)
-    val firestoreUser: State<User?> = _firestoreUser
+    var uiState by mutableStateOf(ChatUiState())
+        private set
 
-    init {
-        fetchCurrentUserFromFirestore()
+    private lateinit var chatId: String
+    private lateinit var currentUserId: String
+    private lateinit var otherUserId: String
+
+    fun initChat(currentUser: String, otherUser: String) {
+        this.currentUserId = currentUser
+        this.otherUserId = otherUser
+        this.chatId = generateChatId(currentUser, otherUser)
+
+        repository.listenForMessages(chatId) { messages ->
+            uiState = uiState.copy(messages = messages)
+        }
     }
 
-    @SuppressLint("SuspiciousIndentation")
-    private fun fetchCurrentUserFromFirestore() {
-        val uid = firebaseAuth.currentUser?.uid ?: return
-          Firebase.firestore.collection("users").document(uid)
-            .get()
-            .addOnSuccessListener { doc ->
-                if (doc.exists()) {
-                    _firestoreUser.value = doc.toObject(User::class.java)
-                } else {
-                    Log.w("ChatViewModel", "User doc not found for uid=$uid")
+
+    private fun generateChatId(user1: String, user2: String): String {
+        return listOf(user1, user2).sorted().joinToString("_")
+    }
+
+    fun onEvent(event: ChatEvent) {
+        when (event) {
+            is ChatEvent.OnMessageInputChanged -> {
+                uiState = uiState.copy(messageInput = event.input)
+            }
+
+            is ChatEvent.OnSendMessage -> {
+                if (uiState.messageInput.isNotBlank()) {
+                    val message = Message(
+                        senderId = currentUserId,
+                        receiverId = otherUserId,
+                        content = uiState.messageInput,
+                        status = MessageStatus.SENT
+                    )
+                    viewModelScope.launch {
+                        repository.sendMessage(chatId, message)
+                    }
+                    uiState = uiState.copy(messageInput = "")
                 }
             }
-            .addOnFailureListener { e ->
-                Log.e("ChatViewModel", "Error fetching user doc", e)
-            }
-    }
 
-    fun logout(onLoggedOut: () -> Unit) {
-        viewModelScope.launch {
-            FirebaseAuth.getInstance().signOut()
-            userPreferences.clearRememberMe()
-            onLoggedOut() // Trigger navigation after logout
+            is ChatEvent.OnMarkMessagesSeen -> {
+                val unseenMessageIds = uiState.messages.filter {
+                    it.receiverId == currentUserId && it.status != MessageStatus.SEEN
+                }.map { it.messageId }
+
+                if (unseenMessageIds.isNotEmpty()) {
+                    viewModelScope.launch {
+                        repository.markMessagesSeen(chatId, unseenMessageIds)
+                    }
+                }
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.jsb.chatapp.feature_auth.data.datasource
+package com.jsb.chatapp.feature_auth.data.auth_datasource
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

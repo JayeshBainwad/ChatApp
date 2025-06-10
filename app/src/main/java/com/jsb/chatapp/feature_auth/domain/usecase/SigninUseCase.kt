@@ -1,7 +1,7 @@
 package com.jsb.chatapp.feature_auth.domain.usecase
 
 import com.jsb.chatapp.util.Result
-import com.jsb.chatapp.feature_auth.data.repository.AuthRepository
+import com.jsb.chatapp.feature_auth.data.auth_repository.AuthRepository
 import com.jsb.chatapp.feature_auth.domain.model.User
 import javax.inject.Inject
 
