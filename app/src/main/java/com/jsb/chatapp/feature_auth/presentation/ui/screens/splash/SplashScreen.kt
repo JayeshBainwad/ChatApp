@@ -51,7 +51,9 @@ fun SplashScreen(
         if (user != null && rememberMe) {
             Log.d("SplashNav", "User ${firestoreUser?.username} authenticated and RememberMe is true")
 
-            navController.navigate(Screen.ChatHome.route)
+            navController.navigate(Screen.ChatHome.route) {
+                popUpTo(Screen.Splash.route) { inclusive = true }
+            }
         } else {
             Log.d("SplashNav", "Redirecting to SignIn: User=${user != null}, RememberMe=$rememberMe")
 

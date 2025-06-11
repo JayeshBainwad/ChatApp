@@ -103,24 +103,32 @@ class AuthViewModel @Inject constructor(
     private suspend fun saveUserToFirestore(user: User) {
         try {
             val db = FirebaseFirestore.getInstance()
-            val userDoc = db.collection("users").document(user.uid)
-            val userData = mapOf(
-                "uid" to user.uid,
-                "username" to user.username,
-                "name" to user.name,
-                "email" to user.email,
-                "avatarUrl" to user.avatarUrl,
-                "phoneNumber" to user.phoneNumber,
-                "bio" to user.bio,
-                "lastSeen" to user.lastSeen,
-                "createdAt" to user.createdAt
-            )
-            userDoc.set(userData).await()
-            Log.d("AuthViewModel", "User saved to Firestore: ${user.uid}")
+            val userDocRef = db.collection("users").document(user.uid)
+            val snapshot = userDocRef.get().await()
+
+            // Only write if the user doesn't already exist (first-time sign-in)
+            if (!snapshot.exists()) {
+                val userData = mapOf(
+                    "uid" to user.uid,
+                    "username" to user.username,
+                    "name" to user.name,
+                    "email" to user.email,
+                    "avatarUrl" to user.avatarUrl,
+                    "phoneNumber" to user.phoneNumber,
+                    "bio" to user.bio,
+                    "lastSeen" to user.lastSeen,
+                    "createdAt" to user.createdAt
+                )
+                userDocRef.set(userData).await()
+                Log.d("AuthViewModel", "New Google user added to Firestore")
+            } else {
+                Log.d("AuthViewModel", "User already exists, skipping Firestore overwrite")
+            }
         } catch (e: Exception) {
             Log.e("AuthViewModel", "Error saving user to Firestore", e)
         }
     }
+
 
     fun resetGoogleSignInResult() {
         _googleSignInResult.value = null
