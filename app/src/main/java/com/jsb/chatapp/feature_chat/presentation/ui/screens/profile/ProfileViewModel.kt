@@ -1,8 +1,10 @@
 package com.jsb.chatapp.feature_chat.presentation.ui.screens.profile
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.FirebaseStorage
 import com.jsb.chatapp.feature_auth.domain.model.User
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.UiEvent
 import com.jsb.chatapp.feature_chat.domain.usecase.IsUsernameAvailableUseCase
@@ -15,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,6 +34,8 @@ class ProfileViewModel @Inject constructor(
     val uiEvent = _uiEvent.asSharedFlow()
 
     private var usernameCheckJob: Job? = null
+
+    private val storage = FirebaseStorage.getInstance().reference
 
     fun onEvent(event: ProfileEvent) {
         when (event) {
@@ -49,7 +54,7 @@ class ProfileViewModel @Inject constructor(
                 _state.value = _state.value.copy(phoneNumber = event.phone)
             }
             is ProfileEvent.OnAvatarSelected -> {
-                _state.value = _state.value.copy(avatarUrl = event.uri)
+                uploadAvatar(event.uri)
             }
             is ProfileEvent.UpdateProfile -> {
                 updateProfile()
@@ -59,6 +64,22 @@ class ProfileViewModel @Inject constructor(
             }
             is ProfileEvent.ResetSaveFlag -> {
                 _state.value = _state.value.copy(isSaved = false)
+            }
+        }
+    }
+
+    private fun uploadAvatar(uri: Uri) {
+        val uid = auth.currentUser?.uid ?: return
+        val avatarRef = storage.child("avatars/$uid.jpg")
+
+        viewModelScope.launch {
+            try {
+                avatarRef.putFile(uri).await()
+                val downloadUrl = avatarRef.downloadUrl.await().toString()
+                _state.value = _state.value.copy(avatarUrl = downloadUrl)
+                _uiEvent.emit(UiEvent.ShowSnackbar("Avatar uploaded successfully"))
+            } catch (e: Exception) {
+                _uiEvent.emit(UiEvent.ShowSnackbar("Avatar upload failed: ${e.message}"))
             }
         }
     }
