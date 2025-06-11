@@ -56,4 +56,19 @@ class AuthDataSourceImpl @Inject constructor(
             .await()
         return snapshot.isEmpty
     }
+
+    override suspend fun getUserById(uid: String): Result<User> = try {
+        val doc = firestore.collection("users").document(uid).get().await()
+        val user = doc.toObject(User::class.java)
+        if (user != null) Result.Success(user) else Result.Error(Exception("User not found"))
+    } catch (e: Exception) {
+        Result.Error(e)
+    }
+
+    override suspend fun updateUserProfile(uid: String, user: User): Result<Unit> = try {
+        firestore.collection("users").document(uid).set(user).await()
+        Result.Success(Unit)
+    } catch (e: Exception) {
+        Result.Error(e)
+    }
 }

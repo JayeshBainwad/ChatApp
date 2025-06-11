@@ -23,6 +23,7 @@ import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.SignupScreen
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.splash.SplashScreen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.ChatScreen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home.ChatHomeScreen
+import com.jsb.chatapp.feature_chat.presentation.ui.screens.profile.ProfileScreen
 import com.jsb.chatapp.theme.ChatAppTheme
 import com.jsb.chatapp.util.SharedChatUserViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -91,6 +92,10 @@ class MainActivity : ComponentActivity() {
 
                             composable(route = Screen.ChatHome.route) {
                                 ChatHomeScreen(navController = navController)
+                            }
+
+                            composable(route = Screen.Profile.route) {
+                                ProfileScreen(navController = navController)
                             }
 
                             composable(Screen.Chat.route) {

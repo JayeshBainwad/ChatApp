@@ -7,4 +7,6 @@ interface AuthDataSource {
     suspend fun signin(email: String, password: String): Result<User>
     suspend fun signup(email: String, password: String, username: String): Result<User>
     suspend fun isUsernameAvailable(username: String): Boolean
+    suspend fun getUserById(uid: String): Result<User>
+    suspend fun updateUserProfile(uid: String, user: User): Result<Unit>
 }

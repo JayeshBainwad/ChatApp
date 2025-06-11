@@ -17,7 +17,11 @@ import com.jsb.chatapp.feature_chat.data.chat_repository.ChatRepository
 import com.jsb.chatapp.feature_chat.data.chat_repository.ChatRepositoryImpl
 import com.jsb.chatapp.feature_chat.domain.usecase.ChatUseCases
 import com.jsb.chatapp.feature_chat.domain.usecase.GetChatsForUserUseCase
+import com.jsb.chatapp.feature_chat.domain.usecase.GetCurrentUserUseCase
+import com.jsb.chatapp.feature_chat.domain.usecase.IsUsernameAvailableUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.ListenForMessagesUseCase
+import com.jsb.chatapp.feature_chat.domain.usecase.ProfileUseCases
+import com.jsb.chatapp.feature_chat.domain.usecase.UpdateUserProfileUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -98,6 +102,21 @@ abstract class AuthModule {
                 getChatsForUser = getChatsForUser,
                 listenForMessages = listenForMessages
             )
+        }
+
+        @Provides
+        @Singleton
+        fun provideProfileUseCases(repository: AuthRepository): ProfileUseCases {
+            return ProfileUseCases(
+                getCurrentUser = GetCurrentUserUseCase(repository),
+                updateUserProfile = UpdateUserProfileUseCase(repository)
+            )
+        }
+
+        @Provides
+        @Singleton
+        fun provideIsUsernameAvailableUseCase(repository: AuthRepository): IsUsernameAvailableUseCase {
+            return IsUsernameAvailableUseCase(repository)
         }
 
     }

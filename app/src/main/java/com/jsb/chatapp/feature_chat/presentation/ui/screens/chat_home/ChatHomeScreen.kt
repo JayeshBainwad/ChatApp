@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -115,7 +116,13 @@ fun ChatHomeScreen(
             }
 
 
-            Box{
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ){
                 Button(
                     onClick = {
                         viewModel.logout {
@@ -123,9 +130,18 @@ fun ChatHomeScreen(
                         }
                     },
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
+
                 ) {
                     Text("Sign out")
+                }
+                Button(
+                    onClick = {
+                        navController.navigate(Screen.Profile.route)
+                    },
+                    modifier = Modifier
+
+                ) {
+                    Text("Profile")
                 }
             }
         }

@@ -12,6 +12,7 @@ import com.jsb.chatapp.feature_auth.domain.model.User
 import com.jsb.chatapp.feature_auth.domain.usecase.SigninUseCase
 import com.jsb.chatapp.feature_auth.domain.usecase.SignupUseCase
 import com.jsb.chatapp.feature_auth.presentation.utils.UserPreferences
+import com.jsb.chatapp.feature_chat.domain.usecase.IsUsernameAvailableUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +32,8 @@ class AuthViewModel @Inject constructor(
     private val SigninUseCase: SigninUseCase,
     private val signupUseCase: SignupUseCase,
     private val googleAuthUiClient: GoogleAuthUiClient,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val isUsernameAvailableUseCase: IsUsernameAvailableUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthState())
@@ -231,17 +233,8 @@ class AuthViewModel @Inject constructor(
         usernameCheckJob?.cancel() // Cancel the previous job
         usernameCheckJob = viewModelScope.launch {
 //            delay(500) // Debounce delay
-            val isAvailable = isUsernameAvailable(username)
+            val isAvailable = isUsernameAvailableUseCase(username)
             _usernameAvailable.value = isAvailable
         }
-    }
-
-    private suspend fun isUsernameAvailable(username: String): Boolean {
-        val snapshot = FirebaseFirestore.getInstance()
-            .collection("users")
-            .whereEqualTo("username", username)
-            .get()
-            .await()
-        return snapshot.isEmpty
     }
 }

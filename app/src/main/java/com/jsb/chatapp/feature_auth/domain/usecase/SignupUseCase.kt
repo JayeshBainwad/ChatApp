@@ -3,10 +3,12 @@ package com.jsb.chatapp.feature_auth.domain.usecase
 import com.jsb.chatapp.util.Result
 import com.jsb.chatapp.feature_auth.data.auth_repository.AuthRepository
 import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.feature_chat.domain.usecase.IsUsernameAvailableUseCase
 import javax.inject.Inject
 
 class SignupUseCase @Inject constructor(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val isUsernameAvailableUseCase: IsUsernameAvailableUseCase
 ) {
     suspend operator fun invoke(email: String, password: String, username: String): Result<User> {
         if (email.isBlank() || password.isBlank() || username.isBlank()) {
@@ -19,7 +21,7 @@ class SignupUseCase @Inject constructor(
             return Result.Error(Exception("Username must be at least 3 characters"))
         }
 
-        val isAvailable = repository.isUsernameAvailable(username)
+        val isAvailable = isUsernameAvailableUseCase(username)
         if (!isAvailable) {
             return Result.Error(Exception("'$username' is already taken"))
         }
