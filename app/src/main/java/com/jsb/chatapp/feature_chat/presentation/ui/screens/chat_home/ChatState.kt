@@ -1,10 +1,10 @@
 package com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home
 
-import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.UserChatInfo
 
-data class ChatHomeState(
+data class ChatState(
     val isLoading: Boolean = false,
-    val users: List<User> = emptyList(),       // Either searched users or chatted users
+    val userChatInfos: List<UserChatInfo> = emptyList(), // Combined user and chat info
     val error: String? = null,
-    val query: String = ""                     // Search query
+    val query: String = "",
 )

@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.jsb.chatapp.Screen
@@ -32,7 +33,7 @@ import kotlinx.coroutines.launch
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SignupScreen(
-    navController: NavHostController,
+    navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val usernameAvailable by viewModel.usernameAvailable.collectAsState()
@@ -48,7 +49,9 @@ fun SignupScreen(
     LaunchedEffect(state.isAuthenticated) {
         if (state.isAuthenticated) {
             delay(1000)
-            navController.navigate(Screen.ChatHome.route)
+            navController.navigate(Screen.Main.route) {
+                popUpTo(Screen.Signup.route) { inclusive = true }
+            }
         }
     }
 

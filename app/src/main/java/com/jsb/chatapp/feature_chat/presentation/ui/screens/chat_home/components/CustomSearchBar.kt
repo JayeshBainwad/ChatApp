@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 
 @Composable
@@ -50,10 +51,10 @@ fun CustomSearchBar(
                 Text("Search users...", color = colors.onSurface.copy(alpha = 0.5f))
             }
         },
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(50.dp)
             .onFocusChanged { isFocused = it.isFocused },
         colors = TextFieldDefaults.colors(
             focusedTextColor = colors.onSurface,

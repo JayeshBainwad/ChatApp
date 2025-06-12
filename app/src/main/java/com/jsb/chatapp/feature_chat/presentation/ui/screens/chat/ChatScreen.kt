@@ -4,21 +4,29 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
+import androidx.compose.material3.BottomAppBarDefaults.windowInsets
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,10 +36,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,7 +55,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.jsb.chatapp.R
 import com.jsb.chatapp.feature_auth.domain.model.User
-import com.jsb.chatapp.feature_chat.domain.model.MessageStatus
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,14 +66,25 @@ fun ChatScreen(
     navController: NavController,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
+
     val state = viewModel.uiState
+    val colors = MaterialTheme.colorScheme
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     // Initialize chat when screen starts
     LaunchedEffect(currentUser.uid, otherUser.uid) {
         viewModel.initChat(currentUser.uid, otherUser.uid)
     }
 
-    // Top App Bar
+    LaunchedEffect(state.messages.size) {
+        if (state.messages.isNotEmpty()) {
+            coroutineScope.launch {
+                listState.animateScrollToItem(state.messages.size - 1)
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -72,7 +93,7 @@ fun ChatScreen(
                         text = otherUser.username,
                         style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.Start,
-                        color = MaterialTheme.colorScheme.onSurface, // Use onSurface for default background
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 22.sp,
                         modifier = Modifier.padding(start = 16.dp)
                     )
@@ -105,7 +126,10 @@ fun ChatScreen(
                 )
             )
         },
-        modifier = Modifier.background(color = Color.Transparent)
+        modifier = Modifier
+            .imePadding()
+            .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.background)
     ) { padding ->
         Column(
             modifier = Modifier
@@ -113,8 +137,11 @@ fun ChatScreen(
                 .padding(padding)
         ) {
             LazyColumn(
-                modifier = Modifier.weight(1f),
-                reverseLayout = false
+                state = listState,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 8.dp)
             ) {
                 items(state.messages) { message ->
                     val isOwnMessage = message.senderId == currentUser.uid
@@ -129,7 +156,7 @@ fun ChatScreen(
                             modifier = Modifier
                                 .background(
                                     color = if (isOwnMessage) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.secondary
+                                    else MaterialTheme.colorScheme.secondary
                                 )
                                 .wrapContentSize()
                                 .padding(8.dp),
@@ -161,18 +188,43 @@ fun ChatScreen(
 
             // Message input + send button
             Row(
-                modifier = Modifier.padding(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextField(
                     value = state.messageInput,
                     onValueChange = { viewModel.onEvent(ChatEvent.OnMessageInputChanged(it)) },
                     modifier = Modifier
-                        .padding(8.dp)
-                        .weight(1f)
+                        .height(50.dp)
+                        .padding(start = 4.dp)
+                        .padding(vertical = 2.dp)
+                        .weight(1f),
+                    shape = RoundedCornerShape(32.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = colors.onSurface,
+                        unfocusedTextColor = colors.onSurface,
+                        cursorColor = colors.primary,
+                        focusedContainerColor = colors.surfaceVariant,
+                        unfocusedContainerColor = colors.surfaceVariant,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedLeadingIconColor = colors.primary,
+                        unfocusedLeadingIconColor = colors.primary
+                    )
                 )
-                Button(onClick = { viewModel.onEvent(ChatEvent.OnSendMessage) }) {
-                    Text("Send")
+
+                IconButton(
+                    onClick = { viewModel.onEvent(ChatEvent.OnSendMessage) },
+                    modifier = Modifier
+                        .size(50.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.send),
+                        contentDescription = "Send",
+                        tint = colors.primary
+                    )
                 }
             }
         }
@@ -183,5 +235,3 @@ fun ChatScreen(
         }
     }
 }
-
-

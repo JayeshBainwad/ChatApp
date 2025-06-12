@@ -15,6 +15,7 @@ import com.jsb.chatapp.feature_auth.presentation.utils.UserPreferences
 import com.jsb.chatapp.feature_chat.domain.model.Chat
 import com.jsb.chatapp.feature_chat.domain.usecase.ChatUseCases
 import com.jsb.chatapp.feature_chat.domain.usecase.SearchUserUseCase
+import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.UserChatInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -32,7 +33,7 @@ class ChatHomeViewModel @Inject constructor(
     private val _firestoreUser = mutableStateOf<User?>(null)
     val firestoreUser: State<User?> = _firestoreUser
 
-    var state by mutableStateOf(ChatHomeState())
+    var state by mutableStateOf(ChatState())
 
     private var searchJob: Job? = null
 
@@ -47,7 +48,12 @@ class ChatHomeViewModel @Inject constructor(
         when (event) {
             is ChatHomeEvent.OnQueryChange -> {
                 state = state.copy(query = event.query)
-                searchUsers(event.query)
+                if (event.query.isBlank()) {
+                    // Clear search results when query is empty
+                    state = state.copy(userChatInfos = emptyList())
+                } else {
+                    searchUsersWithChatInfo(event.query)
+                }
             }
         }
     }
@@ -59,20 +65,58 @@ class ChatHomeViewModel @Inject constructor(
         }
     }
 
-    private fun searchUsers(query: String) {
+//    private fun searchUsers(query: String) {
+//        searchJob?.cancel()
+//        searchJob = viewModelScope.launch {
+//            state = state.copy(isLoading = true, error = null)
+//            try {
+//                val result = searchUserUseCase(query)
+//                state = state.copy(users = result, isLoading = false)
+//            } catch (e: Exception) {
+//                state = state.copy(error = e.message, isLoading = false)
+//            }
+//        }
+//    }
+
+    private fun searchUsersWithChatInfo(query: String) {
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             state = state.copy(isLoading = true, error = null)
             try {
-                val result = searchUserUseCase(query)
-                state = state.copy(users = result, isLoading = false)
+                // 1. Search for users
+                val searchedUsers = searchUserUseCase(query)
+
+                // 2. Get current user's chats to find existing conversations
+                val currentChats = _chatList.value
+
+                // 3. Combine user info with chat info
+                val userChatInfos = searchedUsers.map { user ->
+                    // Find existing chat with this user
+                    val existingChat = currentChats.find { chat ->
+                        chat.otherUser.uid == user.uid
+                    }
+
+                    UserChatInfo(
+                        user = user,
+                        lastMessage = existingChat?.lastMessage,
+                        timestamp = existingChat?.timestamp,
+                        hasExistingChat = existingChat != null
+                    )
+                }
+
+                // 4. Sort: existing chats first (by timestamp), then new users (by username)
+                val sortedUserChatInfos = userChatInfos.sortedWith(
+                    compareByDescending<UserChatInfo> { it.hasExistingChat }
+                        .thenByDescending { it.timestamp ?: 0L }
+                        .thenBy { it.user.username }
+                )
+
+                state = state.copy(userChatInfos = sortedUserChatInfos, isLoading = false)
             } catch (e: Exception) {
                 state = state.copy(error = e.message, isLoading = false)
             }
         }
     }
-
-
 
     @SuppressLint("SuspiciousIndentation")
     private fun fetchCurrentUserFromFirestore() {
