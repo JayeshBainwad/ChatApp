@@ -1,8 +1,5 @@
 package com.jsb.chatapp.feature_chat.presentation.ui.screens.chat
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +15,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -38,7 +34,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -48,6 +43,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.jsb.chatapp.R
 import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.components.MessageCard
 import com.jsb.chatapp.util.rememberImeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -69,9 +65,8 @@ fun ChatScreen(
     val imeState = rememberImeState()
     val isKeyboardOpen by imeState.isOpen
 
-    // Track focus state and keyboard animation
+    // Track focus state for UI behavior
     var isTextFieldFocused by remember { mutableStateOf(false) }
-    val keyboardAnimationProgress = remember { Animatable(0f) }
 
     // Track previous keyboard state to detect transitions
     var previousKeyboardState by remember { mutableStateOf(false) }
@@ -81,62 +76,51 @@ fun ChatScreen(
         viewModel.initChat(currentUser.uid, otherUser.uid)
     }
 
-    // Auto scroll to bottom when new messages arrive
+    // Unified scroll function to avoid duplication
+    suspend fun scrollToBottom(isKeyboardTriggered: Boolean = false) {
+        delay(100)
+        if (state.messages.isNotEmpty()) {
+            val targetIndex = state.messages.size - 1
+
+            // Dynamic scrollOffset calculation
+            val scrollOffset = when {
+                state.messages.size > 10 -> if (isKeyboardTriggered) -350 else -200
+                state.messages.size > 5 -> if (isKeyboardTriggered) -250 else -150
+                else -> if (isKeyboardTriggered) -150 else -100
+            }
+
+            // Add slight delay for keyboard-triggered scrolls
+            if (isKeyboardTriggered) {
+                delay(100) // Sync with keyboard animation
+            }
+
+            listState.animateScrollToItem(
+                index = targetIndex,
+                scrollOffset = scrollOffset
+            )
+        }
+    }
+
+    // Auto scroll when new messages arrive
     LaunchedEffect(state.messages.size) {
         if (state.messages.isNotEmpty()) {
-            coroutineScope.launch {
-                delay(80) // Slight delay for synchronization
-
-                // Use smooth animation for new messages
-                val targetIndex = state.messages.size - 1
-
-                // Dynamic scrollOffset calculation for optimal positioning
-                val scrollOffset = when {
-                    // If we have many messages, scroll with more padding
-                    state.messages.size > 10 -> -300
-
-                    // For fewer messages, use moderate padding
-                    state.messages.size > 5 -> -200
-
-                    // For very few messages, minimal padding
-                    else -> -100
+            // Only scroll if we're not currently handling keyboard opening
+            if (!isKeyboardOpen || previousKeyboardState == isKeyboardOpen) {
+                coroutineScope.launch {
+                    scrollToBottom(isKeyboardTriggered = false)
                 }
-
-                listState.animateScrollToItem(
-                    index = targetIndex,
-                    scrollOffset = scrollOffset
-                )
             }
         }
     }
 
-    // Smart scrollOffset approach with dynamic calculation
+    // Handle keyboard opening/closing
     LaunchedEffect(isKeyboardOpen) {
         if (isKeyboardOpen != previousKeyboardState && state.messages.isNotEmpty()) {
             previousKeyboardState = isKeyboardOpen
 
             if (isKeyboardOpen) {
                 coroutineScope.launch {
-                    delay(100) // Slight delay for synchronization
-
-                    val targetIndex = state.messages.size - 1
-
-                    // Dynamic scrollOffset calculation for optimal positioning
-                    val scrollOffset = when {
-                        // If we have many messages, scroll with more padding
-                        state.messages.size > 10 -> -300
-
-                        // For fewer messages, use moderate padding
-                        state.messages.size > 5 -> -200
-
-                        // For very few messages, minimal padding
-                        else -> -100
-                    }
-
-                    listState.animateScrollToItem(
-                        index = targetIndex,
-                        scrollOffset = scrollOffset
-                    )
+                    scrollToBottom(isKeyboardTriggered = true)
                 }
             }
         }
@@ -148,86 +132,50 @@ fun ChatScreen(
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
     ) {
-        // Messages List - This will automatically adjust its height
+        // Messages List
         LazyColumn(
             state = listState,
             modifier = Modifier
-                .weight(1f) // This makes it take remaining space
+                .weight(1f)
                 .fillMaxWidth(),
             contentPadding = PaddingValues(horizontal = 8.dp),
             reverseLayout = false
         ) {
             items(state.messages) { message ->
                 val isOwnMessage = message.senderId == currentUser.uid
-                Row(
-                    modifier = Modifier
-                        .background(color = Color.Transparent)
-                        .fillMaxWidth()
-                        .padding(4.dp),
-                    horizontalArrangement = if (isOwnMessage) Arrangement.End else Arrangement.Start
-                ) {
-                    Card(
-                        modifier = Modifier
-                            .background(
-                                color = if (isOwnMessage) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.secondary
-                            )
-                            .wrapContentSize()
-                            .padding(8.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isOwnMessage) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.secondary
-                        )
-                    ) {
-                        Column {
-                            Text(
-                                text = message.content,
-                                modifier = Modifier.padding(horizontal = 8.dp),
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                            if (isOwnMessage) {
-                                Text(
-                                    text = message.status.name,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(horizontal = 8.dp),
-                                    textAlign = TextAlign.End
-                                )
-                            }
-                        }
-                    }
-                }
+                MessageCard(
+                    message = message,
+                    isOwnMessage = isOwnMessage
+                )
             }
         }
 
+        // Input Section
         Surface(
-            modifier = Modifier
-                .background(color = Color.Transparent)
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.surface,
+            shadowElevation = 4.dp
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, top = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(8.dp),
+                verticalAlignment = Alignment.Bottom
             ) {
                 TextField(
                     value = state.messageInput,
                     onValueChange = { viewModel.onEvent(ChatEvent.OnMessageInputChanged(it)) },
                     modifier = Modifier
-                        .height(50.dp)
                         .weight(1f)
                         .onFocusChanged { focusState ->
                             isTextFieldFocused = focusState.isFocused
                         },
                     shape = RoundedCornerShape(24.dp),
                     placeholder = {
-                        if (!isTextFieldFocused) {
-                            Text(
-                                text = "Type a message...",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
+                        Text(
+                            text = "Type a message...",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     },
                     colors = TextFieldDefaults.colors(
                         focusedTextColor = colors.onSurface,
@@ -237,13 +185,7 @@ fun ChatScreen(
                         unfocusedContainerColor = colors.surfaceVariant,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent,
-                        focusedLeadingIconColor = colors.primary,
-                        unfocusedLeadingIconColor = colors.primary,
-                        disabledLeadingIconColor = colors.primary,
-                        focusedTrailingIconColor = colors.primary,
-                        unfocusedTrailingIconColor = colors.primary,
-                        disabledTrailingIconColor = colors.primary
+                        disabledIndicatorColor = Color.Transparent
                     ),
                     maxLines = 4,
                     singleLine = false
@@ -256,8 +198,8 @@ fun ChatScreen(
                         }
                     },
                     modifier = Modifier
-                        .padding(start = 2.dp, bottom = 2.dp, end = 2.dp)
-                        .size(30.dp)
+                        .padding(start = 8.dp)
+                        .size(48.dp)
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.send),

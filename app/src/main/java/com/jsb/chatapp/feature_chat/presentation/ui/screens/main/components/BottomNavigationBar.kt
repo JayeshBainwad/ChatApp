@@ -1,8 +1,7 @@
+// Alternative version using drawable resources
 package com.jsb.chatapp.feature_chat.presentation.ui.screens.main.components
 
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -10,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -30,16 +30,19 @@ fun BottomNavigationBar(
             NavigationBarItem(
                 selected = currentRoute == item.route,
                 onClick = { onItemClick(item.route) },
-                icon = { Icon(
-                    Icons.Default.AccountCircle,
-                    contentDescription = item.label,
-                    modifier = Modifier.size(34.dp)
-                ) },
+                icon = {
+                    Icon(
+                        painter = painterResource(id = item.icon),
+                        contentDescription = item.label,
+                        modifier = Modifier.size(24.dp)
+                    )
+                },
                 label = {
                     Text(
-                        item.label,
-                        fontSize = 14.sp
-                ) }
+                        text = item.label,
+                        fontSize = 12.sp
+                    )
+                }
             )
         }
     }
