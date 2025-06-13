@@ -1,10 +1,12 @@
 package com.jsb.chatapp.feature_chat.presentation.ui.screens.main.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -25,8 +27,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -90,6 +95,12 @@ fun CustomTopAppBar(
                     Icon(Icons.Default.MoreVert, contentDescription = "Menu")
                 }
                 DropdownMenu(
+                    tonalElevation = 0.dp,
+                    shadowElevation = 0.dp,
+                    containerColor = Color.Transparent,
+                    modifier = Modifier
+                        .clip(shape = RoundedCornerShape(22.dp))
+                        .background(color = MaterialTheme.colorScheme.surfaceContainer),
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
