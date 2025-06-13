@@ -41,6 +41,7 @@ import com.jsb.chatapp.util.formatChatTimestamp
 fun ChatHomeScreen(
     rootNavController: NavController,
     sharedUserViewModel: SharedChatUserViewModel,
+    mainNavController: NavController,
     viewModel: ChatHomeViewModel = hiltViewModel()
 ) {
     val otherUserState = viewModel.state // ✅ Correct
@@ -99,7 +100,7 @@ fun ChatHomeScreen(
                                 ) {
                                     currentUser?.let { current ->
                                         sharedUserViewModel.setUsers(current = current, other = userChatInfo.user)
-                                        rootNavController.navigate(Screen.Chat.route)
+                                        mainNavController.navigate(Screen.Chat.route)
                                     }
                                 }
                             }
@@ -121,7 +122,7 @@ fun ChatHomeScreen(
                             ) {
                                 currentUser?.let { current ->
                                     sharedUserViewModel.setUsers(current = current, other = chat.otherUser)
-                                    rootNavController.navigate(Screen.Chat.route)
+                                    mainNavController.navigate(Screen.Chat.route)
                                 }
                             }
                         }

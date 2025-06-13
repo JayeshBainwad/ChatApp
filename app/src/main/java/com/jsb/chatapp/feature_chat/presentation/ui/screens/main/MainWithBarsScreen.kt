@@ -1,10 +1,13 @@
 package com.jsb.chatapp.feature_chat.presentation.ui.screens.main
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -13,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jsb.chatapp.Screen
+import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.ChatScreen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home.ChatHomeScreen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.main.components.BottomNavigationBar
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.main.components.CustomTopAppBar
@@ -29,12 +33,20 @@ fun MainWithBarsScreen(
     val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    // Get current and other user from shared view model
+    val currentUser = sharedUserViewModel.currentUser
+    val otherUser = sharedUserViewModel.otherUser
+
     val title = when (currentRoute) {
         Screen.ChatHome.route -> "Chat App"
         Screen.Profile.route -> "Profile"
         Screen.News.route -> "News"
+        Screen.Chat.route -> otherUser?.username ?: "Chat"
         else -> ""
     }
+
+    val showBackButton = currentRoute == Screen.Chat.route
+    val showBottomBar = currentRoute != Screen.Chat.route
 
     Scaffold(
         topBar = {
@@ -45,26 +57,31 @@ fun MainWithBarsScreen(
                         popUpTo(Screen.Main.route) { inclusive = true }
                     }
                 },
-                onHelp = { /* TODO */ }
+                onHelp = { /* TODO */ },
+                showBackButton = showBackButton,
+                onBackClick = if (showBackButton) {
+                    { mainNavController.navigateUp() }
+                } else null,
+                otherUser = otherUser
             )
         },
         bottomBar = {
-            BottomNavigationBar(
-                currentRoute = currentRoute,
-                onItemClick = { route ->
-                    mainNavController.navigate(route)
-                    {
-                        // Fix: popUpTo must refer to a destination inside mainNavController's graph
-                        popUpTo(mainNavController.graph.startDestinationId) {
-                            saveState = true
+            if (showBottomBar) {
+                BottomNavigationBar(
+                    currentRoute = currentRoute,
+                    onItemClick = { route ->
+                        mainNavController.navigate(route) {
+                            // Fix: popUpTo must refer to a destination inside mainNavController's graph
+                            popUpTo(mainNavController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                        launchSingleTop = true
-                        restoreState = true
                     }
-                }
-            )
+                )
+            }
         }
-
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             NavHost(
@@ -74,7 +91,8 @@ fun MainWithBarsScreen(
                 composable(Screen.ChatHome.route) {
                     ChatHomeScreen(
                         rootNavController = rootNavController,
-                        sharedUserViewModel = sharedUserViewModel
+                        sharedUserViewModel = sharedUserViewModel,
+                        mainNavController = mainNavController
                     )
                 }
                 composable(Screen.Profile.route) {
@@ -83,9 +101,29 @@ fun MainWithBarsScreen(
                 composable(Screen.News.route) {
                     NewsScreen()
                 }
+                composable(Screen.Chat.route) {
+                    // Get users from shared view model
+                    currentUser?.let { current ->
+                        otherUser?.let { other ->
+                            val chatId = listOf(current.uid, other.uid).sorted().joinToString("_")
+                            ChatScreen(
+                                chatId = chatId,
+                                currentUser = current,
+                                otherUser = other,
+                                navController = mainNavController
+                            )
+                        }
+                    } ?: run {
+                        // Show loading or error state if users are not available
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "Loading chat... Please wait.")
+                        }
+                    }
+                }
             }
         }
     }
 }
-
-

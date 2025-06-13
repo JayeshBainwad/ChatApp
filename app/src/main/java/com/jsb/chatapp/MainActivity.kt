@@ -30,7 +30,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // IMPORTANT: Use ONLY one of these approaches, not both
         // Option 1: Traditional approach (RECOMMENDED for your case)
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+//        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
 
         // Option 2: Modern edge-to-edge approach (comment out if using Option 1)
          WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -67,32 +68,6 @@ class MainActivity : ComponentActivity() {
                             rootNavController = rootNavController,
                             sharedUserViewModel = sharedUserViewModel
                         )
-                    }
-
-                    // 3. Fullscreen Chat
-                    composable(Screen.Chat.route) {
-                        val parentEntry = remember {
-                            rootNavController.getBackStackEntry(Screen.Main.route)
-                        }
-                        val sharedViewModel: SharedChatUserViewModel = hiltViewModel(parentEntry)
-
-                        val currentUser = sharedViewModel.currentUser
-                        val otherUser = sharedViewModel.otherUser
-
-                        // Ensure both users are not null before rendering ChatScreen
-                        if (currentUser != null && otherUser != null) {
-                            val chatId = listOf(currentUser.uid, otherUser.uid).sorted().joinToString("_")
-
-                            ChatScreen(
-                                chatId = chatId,
-                                currentUser = currentUser,
-                                otherUser = otherUser,
-                                navController = rootNavController
-                            )
-                        } else {
-                            // Show error state with better UX
-                            Text(text = "Loading chat... Please wait.")
-                        }
                     }
                 }
             }
