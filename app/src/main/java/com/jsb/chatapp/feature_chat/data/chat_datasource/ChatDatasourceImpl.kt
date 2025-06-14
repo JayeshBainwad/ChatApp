@@ -1,5 +1,6 @@
 package com.jsb.chatapp.feature_chat.data.chat_datasource
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
@@ -106,4 +107,23 @@ class ChatDatasourceImpl @Inject constructor(
         }.await()
     }
 
+    override suspend fun updateFcmToken(userId: String, token: String) {
+        firestore.collection("users").document(userId)
+            .update("fcmToken", token)
+            .await()
+        Log.d("FCM", "Token updated in Firestore for userId: $userId")
+
+    }
+
+    override suspend fun getUnreadCount(chatId: String, receiverId: String): Int {
+        val snapshot = firestore.collection("chats")
+            .document(chatId)
+            .collection("messages")
+            .whereEqualTo("receiverId", receiverId)
+            .whereEqualTo("status", MessageStatus.SENT.name)
+            .get()
+            .await()
+
+        return snapshot.size()
+    }
 }

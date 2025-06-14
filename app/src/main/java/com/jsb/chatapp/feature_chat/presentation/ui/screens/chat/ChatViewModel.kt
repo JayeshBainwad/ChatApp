@@ -22,12 +22,14 @@ class ChatViewModel @Inject constructor(
 
     private lateinit var chatId: String
     private lateinit var currentUserId: String
+    private lateinit var currentUserName: String
     private lateinit var otherUserId: String
 
-    fun initChat(currentUser: String, otherUser: String) {
-        this.currentUserId = currentUser
-        this.otherUserId = otherUser
-        this.chatId = generateChatId(currentUser, otherUser)
+    fun initChat(currentUserId: String, currentUserName: String, otherUserId: String) {
+        this.currentUserId = currentUserId
+        this.currentUserName = currentUserName
+        this.otherUserId = otherUserId
+        this.chatId = generateChatId(currentUserId, otherUserId)
 
         repository.listenForMessages(chatId) { messages ->
             uiState = uiState.copy(messages = messages)
@@ -51,6 +53,7 @@ class ChatViewModel @Inject constructor(
                         senderId = currentUserId,
                         receiverId = otherUserId,
                         content = uiState.messageInput,
+                        senderName = currentUserName,
                         status = MessageStatus.SENT
                     )
                     viewModelScope.launch {

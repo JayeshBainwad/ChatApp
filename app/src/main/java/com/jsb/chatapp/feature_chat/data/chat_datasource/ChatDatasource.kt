@@ -11,4 +11,6 @@ interface ChatDatasource {
     suspend fun getUserChats(currentUserId: String): List<Chat>
     fun listenForMessages(chatId: String, onMessages: (List<Message>) -> Unit)
     suspend fun markMessagesSeen(chatId: String, messageIds: List<String>)
+    suspend fun updateFcmToken(userId: String, token: String)
+    suspend fun getUnreadCount(chatId: String, receiverId: String): Int
 }

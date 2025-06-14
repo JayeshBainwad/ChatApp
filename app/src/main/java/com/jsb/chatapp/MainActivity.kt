@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.remember
@@ -19,6 +20,7 @@ import com.jsb.chatapp.feature_auth.presentation.ui.screens.splash.SplashScreen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.ChatScreen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.main.MainWithBarsScreen
 import com.jsb.chatapp.theme.ChatAppTheme
+import com.jsb.chatapp.util.RequestPermission
 import com.jsb.chatapp.util.SharedChatUserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -40,6 +42,7 @@ class MainActivity : ComponentActivity() {
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         setContent {
             ChatAppTheme {
+                RequestPermission()
                 val rootNavController = rememberNavController()
                 val mainNavController = rememberNavController()
 
@@ -51,7 +54,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     // 1. Root Graph
                     composable(Screen.Splash.route) {
-                        SplashScreen(rootNavController, snackbarHostState) //No value passed for parameter 'snackbarHostState'
+                        SplashScreen(rootNavController, snackbarHostState)
                     }
                     composable(Screen.Signin.route) {
                         SignInScreen(rootNavController)

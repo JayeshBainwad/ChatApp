@@ -7,6 +7,7 @@ data class Message(
     val senderId: String = "",
     val receiverId: String = "",
     val content: String = "",
+    val senderName: String = "",
     val timestamp: Long = System.currentTimeMillis(),
     val status: MessageStatus = MessageStatus.SENT
 )

@@ -71,9 +71,13 @@ fun ChatScreen(
     // Track previous keyboard state to detect transitions
     var previousKeyboardState by remember { mutableStateOf(false) }
 
-    // Initialize chat when screen starts
+
     LaunchedEffect(currentUser.uid, otherUser.uid) {
-        viewModel.initChat(currentUser.uid, otherUser.uid)
+        viewModel.initChat(
+            currentUserId = currentUser.uid,
+            currentUserName = currentUser.name,
+            otherUserId = otherUser.uid
+        )
     }
 
     // Unified scroll function to avoid duplication

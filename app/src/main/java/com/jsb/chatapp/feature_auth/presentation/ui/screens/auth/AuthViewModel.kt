@@ -8,11 +8,13 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import com.jsb.chatapp.feature_auth.domain.model.User
 import com.jsb.chatapp.feature_auth.domain.usecase.SigninUseCase
 import com.jsb.chatapp.feature_auth.domain.usecase.SignupUseCase
 import com.jsb.chatapp.feature_auth.presentation.utils.UserPreferences
 import com.jsb.chatapp.feature_chat.domain.usecase.IsUsernameAvailableUseCase
+import com.jsb.chatapp.feature_chat.domain.usecase.UpdateFcmTokenUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,6 +36,7 @@ class AuthViewModel @Inject constructor(
     private val googleAuthUiClient: GoogleAuthUiClient,
     private val userPreferences: UserPreferences,
     private val isUsernameAvailableUseCase: IsUsernameAvailableUseCase,
+    private val updateFcmTokenUseCase: UpdateFcmTokenUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthState())
@@ -92,6 +95,12 @@ class AuthViewModel @Inject constructor(
                         }
                     }
                     it.copy(isAuthenticated = true, isLoading = false)
+                }
+                viewModelScope.launch {
+                    val token = FirebaseMessaging.getInstance().token.await()
+                    Log.d("FCM", "FCM token: $token")
+                    val userId = FirebaseAuth.getInstance().uid ?: return@launch
+                    updateFcmTokenUseCase(userId, token)
                 }
             } else {
                 Log.e("AuthViewModel", "Google Sign-In failed: ${result.errorMessage}")
@@ -162,6 +171,12 @@ class AuthViewModel @Inject constructor(
                         )
                     }
                     _uiEvent.emit(UiEvent.ShowSnackbar("Sign-up successful! Welcome ${state.value.username ?: ""}"))
+                    viewModelScope.launch {
+                        val token = FirebaseMessaging.getInstance().token.await()
+                        Log.d("FCM", "FCM token: $token")
+                        val userId = FirebaseAuth.getInstance().uid ?: return@launch
+                        updateFcmTokenUseCase(userId, token)
+                    }
                 }
 
                 is Result.Error -> {
@@ -202,6 +217,12 @@ class AuthViewModel @Inject constructor(
                         )
                     }
                     _uiEvent.emit(UiEvent.ShowSnackbar("Sign-in successful! Welcome ${state.value.username ?: ""}"))
+                    viewModelScope.launch {
+                        val token = FirebaseMessaging.getInstance().token.await()
+                        Log.d("FCM", "FCM token: $token")
+                        val userId = FirebaseAuth.getInstance().uid ?: return@launch
+                        updateFcmTokenUseCase(userId, token)
+                    }
                 }
                 is Result.Error -> {
                     Log.e("AuthViewModel", "Sign-in failed", result.exception)

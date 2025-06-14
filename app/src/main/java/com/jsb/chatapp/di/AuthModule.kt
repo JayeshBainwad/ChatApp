@@ -21,6 +21,7 @@ import com.jsb.chatapp.feature_chat.domain.usecase.GetCurrentUserUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.IsUsernameAvailableUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.ListenForMessagesUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.ProfileUseCases
+import com.jsb.chatapp.feature_chat.domain.usecase.UpdateFcmTokenUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.UpdateUserProfileUseCase
 import dagger.Binds
 import dagger.Module
@@ -118,6 +119,11 @@ abstract class AuthModule {
         fun provideIsUsernameAvailableUseCase(repository: AuthRepository): IsUsernameAvailableUseCase {
             return IsUsernameAvailableUseCase(repository)
         }
+
+        @Provides
+        @Singleton
+        fun provideUpdateFcmTokenUseCase(repository: ChatRepository): UpdateFcmTokenUseCase =
+            UpdateFcmTokenUseCase(repository)
 
     }
 }

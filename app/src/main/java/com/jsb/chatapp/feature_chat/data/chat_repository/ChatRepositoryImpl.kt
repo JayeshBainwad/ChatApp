@@ -25,4 +25,11 @@ class ChatRepositoryImpl @Inject constructor(
         chatDatasource.markMessagesSeen(chatId, messageIds)
     }
 
+    override suspend fun updateFcmToken(userId: String, token: String) {
+        chatDatasource.updateFcmToken(userId, token)
+    }
+
+    override suspend fun getUnreadCount(chatId: String, receiverId: String): Int {
+        return chatDatasource.getUnreadCount(chatId, receiverId)
+    }
 }

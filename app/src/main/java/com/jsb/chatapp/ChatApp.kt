@@ -7,7 +7,13 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthSettings
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.jsb.chatapp.feature_chat.data.fcm.createNotificationChannel
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class ChatApp : Application()
+class ChatApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannel(this)
+    }
+}
