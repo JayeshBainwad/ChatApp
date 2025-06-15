@@ -8,6 +8,7 @@ data class User(
     val avatarUrl: String = "", // optional
     val phoneNumber: String? = null,
     val bio: String? = null,
+    val fcmToken: String = "",
     val lastSeen: Long = System.currentTimeMillis(),
     val createdAt: Long = System.currentTimeMillis()
 )

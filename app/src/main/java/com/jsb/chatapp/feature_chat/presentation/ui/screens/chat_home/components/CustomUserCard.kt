@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,6 +37,7 @@ fun CustomUserCard(
     otherUserAvatar: String,
     otherUserLastMessage: String?,
     lastMessageTime: String? = null,
+    unreadCount: Int = 0, // Add unread count parameter
     onClick: () -> Unit
 ) {
     val imageModel = otherUserAvatar.ifBlank {
@@ -51,7 +54,7 @@ fun CustomUserCard(
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // Optional: remove shadow
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
@@ -77,34 +80,69 @@ fun CustomUserCard(
             Column(
                 modifier = Modifier
                     .background(color = Color.Transparent)
+                    .weight(1f) // Take available space
             ) {
-                Text(text = otherUserName, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = otherUserName,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = if (unreadCount > 0) FontWeight.Bold else FontWeight.Normal
+                    )
+                )
                 Spacer(modifier = Modifier.height(4.dp))
                 otherUserLastMessage?.let {
                     Text(
                         text = it,
                         fontSize = 14.sp,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = if (unreadCount > 0) FontWeight.Medium else FontWeight.Normal,
+                            color = if (unreadCount > 0)
+                                MaterialTheme.colorScheme.onSurface
+                            else
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.weight(1f))
 
             Column(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.Center
             ) {
-                // TODO: Last message time and show number of unread messages
+                // Last message time
                 if (!lastMessageTime.isNullOrBlank()) {
                     Text(
                         text = lastMessageTime,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        color = if (unreadCount > 0)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        fontWeight = if (unreadCount > 0) FontWeight.Medium else FontWeight.Normal
                     )
                 }
 
+                // Unread count badge
+                if (unreadCount > 0) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(18.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (unreadCount > 99) "99+" else unreadCount.toString(),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
             }
         }
     }

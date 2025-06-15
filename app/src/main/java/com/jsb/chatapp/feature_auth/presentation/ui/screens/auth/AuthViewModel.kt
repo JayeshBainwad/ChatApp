@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
+import com.jsb.chatapp.Screen
 import com.jsb.chatapp.feature_auth.domain.model.User
 import com.jsb.chatapp.feature_auth.domain.usecase.SigninUseCase
 import com.jsb.chatapp.feature_auth.domain.usecase.SignupUseCase
@@ -63,8 +64,6 @@ class AuthViewModel @Inject constructor(
     private val _uiEvent = MutableSharedFlow<UiEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
-
-
     init {
         auth.addAuthStateListener(authStateListener)
     }
@@ -72,6 +71,32 @@ class AuthViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         auth.removeAuthStateListener(authStateListener)
+    }
+
+    // Enhanced FCM token management
+    private suspend fun generateFreshFcmToken(): String {
+        return try {
+            // Delete the current token to force generation of a new one
+            FirebaseMessaging.getInstance().deleteToken().await()
+            // Get a fresh token
+            val newToken = FirebaseMessaging.getInstance().token.await()
+            Log.d("FCM", "Generated fresh FCM token: $newToken")
+            newToken
+        } catch (e: Exception) {
+            Log.e("FCM", "Failed to generate fresh token", e)
+            // Fallback to current token if fresh generation fails
+            FirebaseMessaging.getInstance().token.await()
+        }
+    }
+
+    private suspend fun updateUserFcmToken(userId: String) {
+        try {
+            val token = FirebaseMessaging.getInstance().token.await()
+            updateFcmTokenUseCase(userId, token)
+            Log.d("FCM", "Updated FCM token for user: $userId, token: $token")
+        } catch (e: Exception) {
+            Log.e("FCM", "Failed to update FCM token for user: $userId", e)
+        }
     }
 
     suspend fun launchGoogleSignIn(): IntentSender? {
@@ -87,6 +112,10 @@ class AuthViewModel @Inject constructor(
             if (result.data != null) {
                 Log.d("AuthViewModel", "Google Sign-In successful, saving user to Firestore")
                 saveUserToFirestore(result.data)
+                // Update FCM token with fresh token
+                result.data.uid.let { userId ->
+                    updateUserFcmToken(userId)
+                }
                 _state.update {
                     if (it.rememberMe) {
                         viewModelScope.launch {
@@ -95,12 +124,6 @@ class AuthViewModel @Inject constructor(
                         }
                     }
                     it.copy(isAuthenticated = true, isLoading = false)
-                }
-                viewModelScope.launch {
-                    val token = FirebaseMessaging.getInstance().token.await()
-                    Log.d("FCM", "FCM token: $token")
-                    val userId = FirebaseAuth.getInstance().uid ?: return@launch
-                    updateFcmTokenUseCase(userId, token)
                 }
             } else {
                 Log.e("AuthViewModel", "Google Sign-In failed: ${result.errorMessage}")
@@ -138,7 +161,6 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-
     fun resetGoogleSignInResult() {
         _googleSignInResult.value = null
     }
@@ -162,6 +184,10 @@ class AuthViewModel @Inject constructor(
             val result = signupUseCase(state.value.email, state.value.password, state.value.username)
             when (result) {
                 is Result.Success -> {
+                    // Update FCM token with fresh token
+                    FirebaseAuth.getInstance().uid?.let { userId ->
+                        updateUserFcmToken(userId)
+                    }
                     Log.d("AuthViewModel", "Sign-up successful")
                     _state.update {
                         it.copy(
@@ -171,12 +197,6 @@ class AuthViewModel @Inject constructor(
                         )
                     }
                     _uiEvent.emit(UiEvent.ShowSnackbar("Sign-up successful! Welcome ${state.value.username ?: ""}"))
-                    viewModelScope.launch {
-                        val token = FirebaseMessaging.getInstance().token.await()
-                        Log.d("FCM", "FCM token: $token")
-                        val userId = FirebaseAuth.getInstance().uid ?: return@launch
-                        updateFcmTokenUseCase(userId, token)
-                    }
                 }
 
                 is Result.Error -> {
@@ -202,6 +222,13 @@ class AuthViewModel @Inject constructor(
             when (result) {
                 is Result.Success -> {
                     val user = FirebaseAuth.getInstance().currentUser
+                    _uiEvent.emit(UiEvent.ShowSnackbar("Sign-in successful! Welcome ${state.value.username ?: ""}"))
+
+                    // Update FCM token with fresh token
+                    user?.uid?.let { userId ->
+                        updateUserFcmToken(userId)
+                    }
+
                     Log.d("AuthViewModel", "Sign-in successful, user: ${user?.uid}, email: ${user?.email}")
                     _state.update { currentState ->
                         if (currentState.rememberMe) {
@@ -216,13 +243,6 @@ class AuthViewModel @Inject constructor(
                             error = null
                         )
                     }
-                    _uiEvent.emit(UiEvent.ShowSnackbar("Sign-in successful! Welcome ${state.value.username ?: ""}"))
-                    viewModelScope.launch {
-                        val token = FirebaseMessaging.getInstance().token.await()
-                        Log.d("FCM", "FCM token: $token")
-                        val userId = FirebaseAuth.getInstance().uid ?: return@launch
-                        updateFcmTokenUseCase(userId, token)
-                    }
                 }
                 is Result.Error -> {
                     Log.e("AuthViewModel", "Sign-in failed", result.exception)
@@ -235,7 +255,6 @@ class AuthViewModel @Inject constructor(
                     _uiEvent.emit(UiEvent.ShowSnackbar(result.exception.message ?: "Unknown error"))
                 }
             }
-
         }
     }
 
@@ -261,7 +280,6 @@ class AuthViewModel @Inject constructor(
     fun checkUsernameAvailabilityDebounced(username: String) {
         usernameCheckJob?.cancel() // Cancel the previous job
         usernameCheckJob = viewModelScope.launch {
-//            delay(500) // Debounce delay
             val isAvailable = isUsernameAvailableUseCase(username)
             _usernameAvailable.value = isAvailable
         }

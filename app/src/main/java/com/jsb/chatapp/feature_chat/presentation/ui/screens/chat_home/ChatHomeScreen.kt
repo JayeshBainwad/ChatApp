@@ -95,7 +95,8 @@ fun ChatHomeScreen(
                                     otherUserName = userChatInfo.user.username,
                                     otherUserAvatar = userChatInfo.user.avatarUrl,
                                     lastMessageTime = formatChatTimestamp(userChatInfo.timestamp),
-                                    otherUserLastMessage = userChatInfo.lastMessage ?: ""
+                                    otherUserLastMessage = userChatInfo.lastMessage ?: "",
+                                    unreadCount = userChatInfo.unreadCount
 
                                 ) {
                                     currentUser?.let { current ->
@@ -118,7 +119,8 @@ fun ChatHomeScreen(
                                 otherUserAvatar = chat.otherUser.avatarUrl,
                                 otherUserName = chat.otherUser.username,
                                 lastMessageTime = formatChatTimestamp(chat.timestamp),
-                                otherUserLastMessage = chat.lastMessage
+                                otherUserLastMessage = chat.lastMessage,
+                                unreadCount = chat.unreadCount
                             ) {
                                 currentUser?.let { current ->
                                     sharedUserViewModel.setUsers(current = current, other = chat.otherUser)

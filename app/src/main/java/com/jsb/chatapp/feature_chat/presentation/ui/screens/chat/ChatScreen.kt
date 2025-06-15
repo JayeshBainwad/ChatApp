@@ -71,12 +71,12 @@ fun ChatScreen(
     // Track previous keyboard state to detect transitions
     var previousKeyboardState by remember { mutableStateOf(false) }
 
-
     LaunchedEffect(currentUser.uid, otherUser.uid) {
         viewModel.initChat(
             currentUserId = currentUser.uid,
             currentUserName = currentUser.name,
-            otherUserId = otherUser.uid
+            otherUserId = otherUser.uid,
+            otherUserFcmToken = otherUser.fcmToken
         )
     }
 

@@ -6,5 +6,6 @@ data class UserChatInfo(
     val user: User,
     val lastMessage: String? = null,
     val timestamp: Long? = null,
-    val hasExistingChat: Boolean = false
+    val hasExistingChat: Boolean = false,
+    val unreadCount: Int = 0 // Add unread count
 )
