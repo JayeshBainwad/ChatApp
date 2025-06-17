@@ -102,6 +102,30 @@ class MainScreenViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    /**
+     * Loads a user from Firestore by their ID
+     * This is used when starting a new chat with someone not in available chats
+     */
+    private suspend fun loadUserById(userId: String): User? {
+        return try {
+            val userDoc = firestore
+                .collection("users")
+                .document(userId)
+                .get()
+                .await()
+
+            if (userDoc.exists()) {
+                userDoc.toObject(User::class.java)
+            } else {
+                Log.w(TAG, "User with ID $userId not found")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading user with ID $userId", e)
+            null
+        }
+    }
+
     fun onEvent(event: MainScreenEvent) {
         when (event) {
             is MainScreenEvent.ShowSignOutDialog -> {
@@ -117,17 +141,41 @@ class MainScreenViewModel @Inject constructor(
                 _state.value = _state.value.copy(currentRoute = event.route)
             }
             is MainScreenEvent.SelectChatUser -> {
-                // Find the user from available chats
+                // First, try to find the user from available chats
                 val selectedChat = _state.value.availableChats.find {
                     it.otherUser.uid == event.userId
                 }
+
                 if (selectedChat != null) {
+                    // Chat exists, use the existing chat data
                     _state.value = _state.value.copy(
                         selectedOtherUser = selectedChat.otherUser,
                         selectedChatId = selectedChat.chatId,
-                        selectedUserIdForChat = event.userId // Store the selected user ID
+                        selectedUserIdForChat = event.userId
                     )
-                    Log.d(TAG, "Selected chat user: ${selectedChat.otherUser.username}")
+                    Log.d(TAG, "Selected existing chat user: ${selectedChat.otherUser.username}")
+                } else {
+                    // Chat doesn't exist, load the user from Firestore to start a new chat
+                    Log.d(TAG, "No existing chat found for user $event.userId, loading user data")
+                    viewModelScope.launch {
+                        val otherUser = loadUserById(event.userId)
+                        if (otherUser != null) {
+                            // Generate a new chat ID for the new conversation
+                            val currentUserId = _state.value.currentUser?.uid
+                            val newChatId = if (currentUserId != null) {
+                                listOf(currentUserId, event.userId).sorted().joinToString("_")
+                            } else null
+
+                            _state.value = _state.value.copy(
+                                selectedOtherUser = otherUser,
+                                selectedChatId = newChatId,
+                                selectedUserIdForChat = event.userId
+                            )
+                            Log.d(TAG, "Loaded user for new chat: ${otherUser.username}")
+                        } else {
+                            Log.e(TAG, "Failed to load user data for ID: ${event.userId}")
+                        }
+                    }
                 }
             }
             is MainScreenEvent.SetChatUsers -> {
@@ -135,14 +183,14 @@ class MainScreenViewModel @Inject constructor(
                 _state.value = _state.value.copy(
                     selectedOtherUser = event.otherUser,
                     selectedChatId = event.chatId,
-                    selectedUserIdForChat = event.otherUser.uid // Store the selected user ID
+                    selectedUserIdForChat = event.otherUser.uid
                 )
             }
             is MainScreenEvent.ClearSelectedChat -> {
                 _state.value = _state.value.copy(
                     selectedOtherUser = null,
                     selectedChatId = null,
-                    selectedUserIdForChat = null // Clear the selected user ID
+                    selectedUserIdForChat = null
                 )
             }
         }
