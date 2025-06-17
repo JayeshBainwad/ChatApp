@@ -14,9 +14,10 @@ import com.jsb.chatapp.feature_auth.domain.model.User
 import com.jsb.chatapp.feature_auth.presentation.utils.UserPreferences
 import com.jsb.chatapp.feature_chat.domain.model.Chat
 import com.jsb.chatapp.feature_chat.domain.usecase.ChatUseCases
-import com.jsb.chatapp.feature_chat.domain.usecase.SearchUserUseCase
+import com.jsb.chatapp.feature_chat.domain.usecase.SearchUserRealtimeUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.GetChatsRealtimeUseCase
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.UserChatInfo
+import com.jsb.chatapp.util.UserStatusManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
@@ -29,10 +30,11 @@ import javax.inject.Inject
 class ChatHomeViewModel @Inject constructor(
     private val userPreferences: UserPreferences,
     private val firebaseAuth: FirebaseAuth,
-    private val searchUserUseCase: SearchUserUseCase,
+    private val searchUserRealtimeUseCase: SearchUserRealtimeUseCase, // Updated to use real-time search
     private val chatUseCases: ChatUseCases,
-    private val getChatsRealtimeUseCase: GetChatsRealtimeUseCase, // Add this new use case
-    private val firestore: FirebaseFirestore
+    private val getChatsRealtimeUseCase: GetChatsRealtimeUseCase,
+    private val firestore: FirebaseFirestore,
+    private val userStatusManager: UserStatusManager
 ) : ViewModel() {
 
     companion object {
@@ -42,13 +44,16 @@ class ChatHomeViewModel @Inject constructor(
     private val _firestoreUser = mutableStateOf<User?>(null)
     val firestoreUser: State<User?> = _firestoreUser
 
-    var state by mutableStateOf(ChatState())
+    var state by mutableStateOf(ChatState()) // used to display searched users
 
     private var searchJob: Job? = null
-    private var chatsJob: Job? = null // For managing the Flow subscription
+    private var chatsJob: Job? = null
 
-    private val _chatList = mutableStateOf<List<Chat>>(emptyList())
+    private val _chatList = mutableStateOf<List<Chat>>(emptyList()) // used to display recent chat
     val chatList: State<List<Chat>> = _chatList
+
+    // Store search results separately for real-time updates
+    private val _searchUsers = mutableStateOf<List<User>>(emptyList())
 
     init {
         fetchCurrentUserFromFirestore()
@@ -63,11 +68,77 @@ class ChatHomeViewModel @Inject constructor(
                     // Clear search results when query is empty
                     Log.d(TAG, "Query is blank, clearing search results")
                     state = state.copy(userChatInfos = emptyList())
+                    _searchUsers.value = emptyList()
+                    searchJob?.cancel()
                 } else {
-                    searchUsersWithChatInfo(event.query)
+                    startRealtimeSearch(event.query)
                 }
             }
         }
+    }
+
+    private fun startRealtimeSearch(query: String) {
+        Log.d(TAG, "Starting real-time search for: '$query'")
+
+        searchJob?.cancel()
+        searchJob = searchUserRealtimeUseCase(query)
+            .onEach { users ->
+                Log.d(TAG, "Received ${users.size} users from real-time search")
+                _searchUsers.value = users
+                updateSearchResults()
+            }
+            .catch { error ->
+                Log.e(TAG, "Error in real-time search", error)
+                state = state.copy(error = error.message, isLoading = false)
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun updateSearchResults() {
+        val searchedUsers = _searchUsers.value
+        val currentChats = _chatList.value
+
+        Log.d(
+            TAG,
+            "Updating search results with ${searchedUsers.size} users " +
+                    "and ${currentChats.size} chats"
+        )
+
+        // Combine user info with chat info
+        val userChatInfos = searchedUsers.map { user ->
+            // Find existing chat with this user
+            val existingChat = currentChats.find { chat ->
+                chat.otherUser.uid == user.uid
+            }
+
+            val userChatInfo = UserChatInfo(
+                user = user,
+                lastMessage = existingChat?.lastMessage,
+                timestamp = existingChat?.timestamp,
+                hasExistingChat = existingChat != null,
+                unreadCount = existingChat?.unreadCount ?: 0
+            )
+
+            // Log each UserChatInfo creation
+            Log.d(TAG, "Created UserChatInfo for ${user.username}: " +
+                    "hasExistingChat=${userChatInfo.hasExistingChat}, " +
+                    "unreadCount=${userChatInfo.unreadCount}, " +
+                    "lastMessage='${userChatInfo.lastMessage}', " +
+                    "isOnline='${userChatInfo.user.isOnline}', " +
+                    "timestamp=${userChatInfo.timestamp}")
+
+            userChatInfo
+        }
+
+        // Sort: existing chats first (by timestamp), then new users (by username)
+        val sortedUserChatInfos = userChatInfos.sortedWith(
+            compareByDescending<UserChatInfo> { it.hasExistingChat }
+                .thenByDescending { it.timestamp ?: 0L }
+                .thenBy { it.user.username }
+        )
+
+        Log.d(TAG, "Final sorted UserChatInfos count: ${sortedUserChatInfos.size}")
+        state = state.copy(userChatInfos = sortedUserChatInfos, isLoading = false)
     }
 
     // Updated to use Flow-based real-time updates
@@ -86,6 +157,7 @@ class ChatHomeViewModel @Inject constructor(
                 chats.forEachIndexed { index, chat ->
                     Log.d(TAG, "Chat $index: " +
                             "otherUser=${chat.otherUser.username}, " +
+                            "otherUser is online=${chat.otherUser.isOnline}, " +
                             "lastMessage='${chat.lastMessage}', " +
                             "unreadCount=${chat.unreadCount}, " +
                             "timestamp=${chat.timestamp}")
@@ -96,7 +168,7 @@ class ChatHomeViewModel @Inject constructor(
                 // If we're currently searching, update the search results too
                 if (state.query.isNotBlank()) {
                     Log.d(TAG, "Query is active (${state.query}), updating search results")
-                    searchUsersWithChatInfo(state.query)
+                    updateSearchResults()
                 }
             }
             .catch { error ->
@@ -105,71 +177,6 @@ class ChatHomeViewModel @Inject constructor(
                 state = state.copy(error = error.message)
             }
             .launchIn(viewModelScope)
-    }
-
-    private fun searchUsersWithChatInfo(query: String) {
-        Log.d(TAG, "Searching users with chat info for query: '$query'")
-
-        searchJob?.cancel()
-        searchJob = viewModelScope.launch {
-            state = state.copy(isLoading = true, error = null)
-            try {
-                // 1. Search for users
-                val searchedUsers = searchUserUseCase(query)
-                Log.d(TAG, "Found ${searchedUsers.size} users matching query")
-
-                // 2. Get current user's chats to find existing conversations
-                val currentChats = _chatList.value
-                Log.d(TAG, "Current chats count: ${currentChats.size}")
-
-                // 3. Combine user info with chat info
-                val userChatInfos = searchedUsers.map { user ->
-                    // Find existing chat with this user
-                    val existingChat = currentChats.find { chat ->
-                        chat.otherUser.uid == user.uid
-                    }
-
-                    val userChatInfo = UserChatInfo(
-                        user = user,
-                        lastMessage = existingChat?.lastMessage,
-                        timestamp = existingChat?.timestamp,
-                        hasExistingChat = existingChat != null,
-                        unreadCount = existingChat?.unreadCount ?: 0 // Add unread count
-                    )
-
-                    // Log each UserChatInfo creation
-                    Log.d(TAG, "Created UserChatInfo for ${user.username}: " +
-                            "hasExistingChat=${userChatInfo.hasExistingChat}, " +
-                            "unreadCount=${userChatInfo.unreadCount}, " +
-                            "lastMessage='${userChatInfo.lastMessage}', " +
-                            "timestamp=${userChatInfo.timestamp}")
-
-                    userChatInfo
-                }
-
-                // 4. Sort: existing chats first (by timestamp), then new users (by username)
-                val sortedUserChatInfos = userChatInfos.sortedWith(
-                    compareByDescending<UserChatInfo> { it.hasExistingChat }
-                        .thenByDescending { it.timestamp ?: 0L }
-                        .thenBy { it.user.username }
-                )
-
-                Log.d(TAG, "Final sorted UserChatInfos count: ${sortedUserChatInfos.size}")
-                sortedUserChatInfos.forEachIndexed { index, userChatInfo ->
-                    Log.d(TAG, "Sorted UserChatInfo $index: " +
-                            "user=${userChatInfo.user.username}, " +
-                            "unreadCount=${userChatInfo.unreadCount}, " +
-                            "hasExistingChat=${userChatInfo.hasExistingChat}")
-                }
-
-                state = state.copy(userChatInfos = sortedUserChatInfos, isLoading = false)
-                Log.d(TAG, "Updated state with ${sortedUserChatInfos.size} userChatInfos")
-
-            } catch (e: Exception) {
-                Log.e(TAG, "Error in searchUsersWithChatInfo", e)
-                state = state.copy(error = e.message, isLoading = false)
-            }
-        }
     }
 
     @SuppressLint("SuspiciousIndentation")
@@ -200,8 +207,13 @@ class ChatHomeViewModel @Inject constructor(
     fun logout(onLoggedOut: () -> Unit) {
         Log.d(TAG, "Logging out user")
         viewModelScope.launch {
+            // Set user offline before logout
+            firebaseAuth.currentUser?.uid?.let { userId ->
+                userStatusManager.setUserOffline(userId)
+            }
             // Cancel real-time updates before logout
             chatsJob?.cancel()
+            searchJob?.cancel()
             firebaseAuth.signOut()
             userPreferences.clearRememberMe()
             Log.d(TAG, "User logged out successfully")

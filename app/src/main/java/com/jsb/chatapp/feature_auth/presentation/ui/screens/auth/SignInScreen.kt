@@ -196,11 +196,3 @@ fun SignInScreen(
         }
     }
 }
-
-@Preview
-@Composable
-fun LoginScreenPreview() {
-    ChatAppTheme {
-        SignInScreen(rememberNavController())
-    }
-}

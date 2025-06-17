@@ -37,7 +37,8 @@ fun CustomUserCard(
     otherUserAvatar: String,
     otherUserLastMessage: String?,
     lastMessageTime: String? = null,
-    unreadCount: Int = 0, // Add unread count parameter
+    unreadCount: Int = 0,
+    isOnline: Boolean = false,
     onClick: () -> Unit
 ) {
     val imageModel = otherUserAvatar.ifBlank {
@@ -63,17 +64,38 @@ fun CustomUserCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AsyncImage(
-                model = imageModel,
-                contentDescription = null,
-                modifier = Modifier
-                    .background(color = Color.Transparent)
-                    .size(46.dp)
-                    .clip(CircleShape)
-                    .border(width = 0.6.dp, color = MaterialTheme.colorScheme.onSurface, shape = CircleShape),
-                placeholder = painterResource(R.drawable.placeholder_profile),
-                error = painterResource(R.drawable.placeholder_profile)
-            )
+            // Profile image with online indicator
+            Box {
+                AsyncImage(
+                    model = imageModel,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .background(color = Color.Transparent)
+                        .size(46.dp)
+                        .clip(CircleShape)
+                        .border(width = 0.6.dp, color = MaterialTheme.colorScheme.onSurface, shape = CircleShape),
+                    placeholder = painterResource(R.drawable.placeholder_profile),
+                    error = painterResource(R.drawable.placeholder_profile)
+                )
+
+                // Online indicator (green dot)
+                if (isOnline) {
+                    Box(
+                        modifier = Modifier
+                            .size(14.dp)
+                            .background(
+                                color = Color(0xFF4CAF50), // Green color
+                                shape = CircleShape
+                            )
+                            .border(
+                                width = 2.dp,
+                                color = MaterialTheme.colorScheme.surface,
+                                shape = CircleShape
+                            )
+                            .align(Alignment.BottomEnd)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.width(12.dp))
 

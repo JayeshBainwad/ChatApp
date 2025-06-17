@@ -17,34 +17,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.jsb.chatapp.Screen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home.components.CustomSearchBar
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home.components.CustomUserCard
-import com.jsb.chatapp.theme.ChatAppTheme
-import com.jsb.chatapp.util.SharedChatUserViewModel
+import com.jsb.chatapp.feature_chat.presentation.ui.screens.main.MainScreenEvent
+import com.jsb.chatapp.feature_chat.presentation.ui.screens.main.MainScreenViewModel
 import com.jsb.chatapp.util.formatChatTimestamp
 
 @SuppressLint("UnrememberedMutableState", "UnrememberedGetBackStackEntry")
 @Composable
 fun ChatHomeScreen(
     rootNavController: NavController,
-    sharedUserViewModel: SharedChatUserViewModel,
     mainNavController: NavController,
+    mainScreenViewModel: MainScreenViewModel, // Pass the MainScreenViewModel
     viewModel: ChatHomeViewModel = hiltViewModel()
 ) {
-    val otherUserState = viewModel.state // ✅ Correct
+    val otherUserState = viewModel.state
     val currentUser = viewModel.firestoreUser.value
     val currentUserId = currentUser?.uid
     val focusManager = LocalFocusManager.current
@@ -89,21 +85,23 @@ fun ChatHomeScreen(
                         modifier = Modifier
                             .background(color = MaterialTheme.colorScheme.background)
                     ) {
-                        items(otherUserState.userChatInfos) { userChatInfo  ->
+                        items(otherUserState.userChatInfos) { userChatInfo ->
                             if (userChatInfo.user.uid != currentUserId) {
                                 CustomUserCard(
                                     otherUserName = userChatInfo.user.username,
                                     otherUserAvatar = userChatInfo.user.avatarUrl,
                                     lastMessageTime = formatChatTimestamp(userChatInfo.timestamp),
                                     otherUserLastMessage = userChatInfo.lastMessage ?: "",
-                                    unreadCount = userChatInfo.unreadCount
-
-                                ) {
-                                    currentUser?.let { current ->
-                                        sharedUserViewModel.setUsers(current = current, other = userChatInfo.user)
+                                    unreadCount = userChatInfo.unreadCount,
+                                    isOnline = userChatInfo.user.isOnline,
+                                    onClick = {
+                                        // Update MainScreenViewModel with selected user
+                                        mainScreenViewModel.onEvent(
+                                            MainScreenEvent.SelectChatUser(userChatInfo.user.uid)
+                                        )
                                         mainNavController.navigate(Screen.Chat.route)
                                     }
-                                }
+                                )
                             }
                         }
                     }
@@ -120,13 +118,16 @@ fun ChatHomeScreen(
                                 otherUserName = chat.otherUser.username,
                                 lastMessageTime = formatChatTimestamp(chat.timestamp),
                                 otherUserLastMessage = chat.lastMessage,
-                                unreadCount = chat.unreadCount
-                            ) {
-                                currentUser?.let { current ->
-                                    sharedUserViewModel.setUsers(current = current, other = chat.otherUser)
+                                unreadCount = chat.unreadCount,
+                                isOnline = chat.otherUser.isOnline,
+                                onClick = {
+                                    // Update MainScreenViewModel with selected user
+                                    mainScreenViewModel.onEvent(
+                                        MainScreenEvent.SelectChatUser(chat.otherUser.uid)
+                                    )
                                     mainNavController.navigate(Screen.Chat.route)
                                 }
-                            }
+                            )
                         }
                     }
                 }

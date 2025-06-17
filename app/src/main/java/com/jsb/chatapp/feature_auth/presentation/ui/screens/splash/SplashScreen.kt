@@ -47,7 +47,7 @@ fun SplashScreen(
 
     // Navigate based on user and Remember Me
     LaunchedEffect(user, rememberMe) {
-        delay(1000L) // Optional delay for splash effect
+        delay(600L) // Optional delay for splash effect
         if (user != null && rememberMe) {
             Log.d("SplashNav", "User ${firestoreUser?.username} authenticated and RememberMe is true")
 

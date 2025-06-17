@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import com.jsb.chatapp.util.Result
+import com.jsb.chatapp.util.UserStatusManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -37,7 +38,8 @@ class AuthViewModel @Inject constructor(
     private val googleAuthUiClient: GoogleAuthUiClient,
     private val userPreferences: UserPreferences,
     private val isUsernameAvailableUseCase: IsUsernameAvailableUseCase,
-    private val updateFcmTokenUseCase: UpdateFcmTokenUseCase
+    private val updateFcmTokenUseCase: UpdateFcmTokenUseCase,
+    private val userStatusManager: UserStatusManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthState())
@@ -73,29 +75,46 @@ class AuthViewModel @Inject constructor(
         auth.removeAuthStateListener(authStateListener)
     }
 
-    // Enhanced FCM token management
-    private suspend fun generateFreshFcmToken(): String {
+    // Simplified FCM token management - just get current token, don't delete
+    private suspend fun getFcmToken(): String {
         return try {
-            // Delete the current token to force generation of a new one
-            FirebaseMessaging.getInstance().deleteToken().await()
-            // Get a fresh token
-            val newToken = FirebaseMessaging.getInstance().token.await()
-            Log.d("FCM", "Generated fresh FCM token: $newToken")
-            newToken
+            val token = FirebaseMessaging.getInstance().token.await()
+            Log.d("FCM", "Got FCM token: $token")
+            token
         } catch (e: Exception) {
-            Log.e("FCM", "Failed to generate fresh token", e)
-            // Fallback to current token if fresh generation fails
-            FirebaseMessaging.getInstance().token.await()
+            Log.e("FCM", "Failed to get FCM token", e)
+            ""
         }
     }
 
     private suspend fun updateUserFcmToken(userId: String) {
         try {
-            val token = FirebaseMessaging.getInstance().token.await()
-            updateFcmTokenUseCase(userId, token)
-            Log.d("FCM", "Updated FCM token for user: $userId, token: $token")
+            val token = getFcmToken() // Use simple token getter, not fresh generation
+            val db = FirebaseFirestore.getInstance()
+            val userDocRef = db.collection("users").document(userId)
+
+            // First check if user document exists
+            val snapshot = userDocRef.get().await()
+            if (!snapshot.exists()) {
+                Log.w("FCM", "User document doesn't exist for userId: $userId, skipping FCM token update")
+                return
+            }
+
+            // Update both FCM token and online status
+            val updates = mapOf(
+                "fcmToken" to token,
+                "isOnline" to true,
+                "lastSeen" to System.currentTimeMillis()
+            )
+
+            userDocRef.update(updates).await()
+            Log.d("FCM", "Updated FCM token and online status for user: $userId, token: $token")
+
+            // Also update through the status manager
+            userStatusManager.setUserOnline(userId)
         } catch (e: Exception) {
             Log.e("FCM", "Failed to update FCM token for user: $userId", e)
+            // Don't throw here as this is called after user creation and shouldn't fail the whole process
         }
     }
 
@@ -107,39 +126,80 @@ class AuthViewModel @Inject constructor(
     fun signInWithGoogleIntent(intent: Intent) {
         viewModelScope.launch {
             Log.d("AuthViewModel", "Processing Google Sign-In intent")
+            _state.update { it.copy(isLoading = true) } // Set loading state
+
             val result = googleAuthUiClient.signInWithIntent(intent)
             _googleSignInResult.value = result
+
             if (result.data != null) {
                 Log.d("AuthViewModel", "Google Sign-In successful, saving user to Firestore")
-                saveUserToFirestore(result.data)
-                // Update FCM token with fresh token
-                result.data.uid.let { userId ->
-                    updateUserFcmToken(userId)
-                }
-                _state.update {
-                    if (it.rememberMe) {
-                        viewModelScope.launch {
-                            userPreferences.saveRememberMe(true)
-                            Log.d("AuthViewModel", "Saved rememberMe: true")
+
+                try {
+                    // Wait for user to be saved to Firestore before updating UI state
+                    val isNewUser = saveUserToFirestore(result.data)
+
+                    // Only call updateUserFcmToken if it's an existing user
+                    // For new users, FCM token is already set during creation
+                    if (!isNewUser) {
+                        result.data.uid.let { userId ->
+                            updateUserFcmToken(userId)
                         }
                     }
-                    it.copy(isAuthenticated = true, isLoading = false)
+
+                    // Set user online after successful signup
+                    userStatusManager.setUserOnline(result.data.uid)
+
+                    // Only update state to authenticated after everything is complete
+                    _state.update { currentState ->
+                        if (currentState.rememberMe) {
+                            viewModelScope.launch {
+                                userPreferences.saveRememberMe(true)
+                                Log.d("AuthViewModel", "Saved rememberMe: true")
+                            }
+                        }
+                        currentState.copy(isAuthenticated = true, isLoading = false, error = null)
+                    }
+
+                    Log.d("AuthViewModel", "Google Sign-In process completed successfully")
+                } catch (e: Exception) {
+                    Log.e("AuthViewModel", "Error during Google Sign-In process", e)
+                    _state.update {
+                        it.copy(
+                            error = "Failed to complete sign-in: ${e.message}",
+                            isLoading = false,
+                            isAuthenticated = false
+                        )
+                    }
                 }
             } else {
                 Log.e("AuthViewModel", "Google Sign-In failed: ${result.errorMessage}")
-                _state.update { it.copy(error = result.errorMessage, isLoading = false) }
+                _state.update {
+                    it.copy(
+                        error = result.errorMessage,
+                        isLoading = false,
+                        isAuthenticated = false
+                    )
+                }
             }
         }
     }
 
-    private suspend fun saveUserToFirestore(user: User) {
-        try {
+    private suspend fun saveUserToFirestore(user: User): Boolean {
+        return try {
             val db = FirebaseFirestore.getInstance()
             val userDocRef = db.collection("users").document(user.uid)
-            val snapshot = userDocRef.get().await()
 
-            // Only write if the user doesn't already exist (first-time sign-in)
-            if (!snapshot.exists()) {
+            // Check if user exists first
+            val snapshot = userDocRef.get().await()
+            val userExists = snapshot.exists()
+            Log.d("AuthViewModel", "Checking if user exists in Firestore: $userExists")
+
+            if (!userExists) {
+                // User doesn't exist, create new user document
+                // Get FCM token for new user
+                val fcmToken = getFcmToken()
+
+                // Create explicit map to avoid field name conflicts
                 val userData = mapOf(
                     "uid" to user.uid,
                     "username" to user.username,
@@ -147,17 +207,35 @@ class AuthViewModel @Inject constructor(
                     "email" to user.email,
                     "avatarUrl" to user.avatarUrl,
                     "phoneNumber" to user.phoneNumber,
-                    "bio" to user.bio,
-                    "lastSeen" to user.lastSeen,
-                    "createdAt" to user.createdAt
+                    "bio" to (user.bio ?: ""),
+                    "fcmToken" to fcmToken,
+                    "lastSeen" to System.currentTimeMillis(),
+                    "createdAt" to System.currentTimeMillis(),
+                    "isOnline" to true // Explicitly use "isOnline" field name
                 )
+
+                // Wait for the user to be saved before continuing
                 userDocRef.set(userData).await()
-                Log.d("AuthViewModel", "New Google user added to Firestore")
+                Log.d("AuthViewModel", "New Google user successfully added to Firestore with FCM token")
+                false // Return false indicating this is a new user
             } else {
-                Log.d("AuthViewModel", "User already exists, skipping Firestore overwrite")
+                // User exists, just update FCM token and online status
+                val fcmToken = getFcmToken()
+                val updates = mapOf(
+                    "fcmToken" to fcmToken,
+                    "isOnline" to true, // Explicitly use "isOnline"
+                    "lastSeen" to System.currentTimeMillis()
+                )
+
+                // Wait for the update to complete
+                userDocRef.update(updates).await()
+                Log.d("AuthViewModel", "Existing user successfully updated with new FCM token and online status")
+                true // Return true indicating this is an existing user
             }
         } catch (e: Exception) {
             Log.e("AuthViewModel", "Error saving user to Firestore", e)
+            // Re-throw the exception so it can be handled in the calling function
+            throw e
         }
     }
 
@@ -187,6 +265,8 @@ class AuthViewModel @Inject constructor(
                     // Update FCM token with fresh token
                     FirebaseAuth.getInstance().uid?.let { userId ->
                         updateUserFcmToken(userId)
+                        // Set user online after successful signup
+                        userStatusManager.setUserOnline(userId)
                     }
                     Log.d("AuthViewModel", "Sign-up successful")
                     _state.update {
@@ -227,6 +307,8 @@ class AuthViewModel @Inject constructor(
                     // Update FCM token with fresh token
                     user?.uid?.let { userId ->
                         updateUserFcmToken(userId)
+                        // Set user online after successful signup
+                        userStatusManager.setUserOnline(userId)
                     }
 
                     Log.d("AuthViewModel", "Sign-in successful, user: ${user?.uid}, email: ${user?.email}")

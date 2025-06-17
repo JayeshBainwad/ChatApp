@@ -11,20 +11,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jsb.chatapp.Screen
-import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.AuthViewModel
+import com.jsb.chatapp.feature_auth.domain.model.User
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.ChatScreen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home.ChatHomeScreen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home.ChatHomeViewModel
@@ -32,60 +28,63 @@ import com.jsb.chatapp.feature_chat.presentation.ui.screens.main.components.Bott
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.main.components.CustomTopAppBar
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.profile.ProfileScreen
 import com.jsb.chatapp.feature_news.presentation.ui.screens.NewsScreen
-import com.jsb.chatapp.util.SharedChatUserViewModel
 
 @Composable
 fun MainWithBarsScreen(
     rootNavController: NavHostController,
-    sharedUserViewModel: SharedChatUserViewModel,
-    authViewModel: AuthViewModel = hiltViewModel(),
     chatHomeViewModel: ChatHomeViewModel = hiltViewModel(),
-    startInChat: Boolean = false
+    mainScreenViewModel: MainScreenViewModel = hiltViewModel(),
+    startInChat: Boolean = false,
+    notificationOtherUser: User? = null // For notification navigation
 ) {
     val mainNavController = rememberNavController()
     val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // Collect auth state to handle sign out navigation
-    val authState by authViewModel.state.collectAsState()
-    val firebaseUser by authViewModel.currentUser.collectAsState()
-    val currentUser = sharedUserViewModel.currentUser
-    val otherUser = sharedUserViewModel.otherUser
+    // Collect states
+    val mainScreenState by mainScreenViewModel.state.collectAsState()
 
-    // State for sign out confirmation dialog
-    var showSignOutDialog by remember { mutableStateOf(false) }
-
-    val title = when (currentRoute) {
-        Screen.ChatHome.route -> "Chat App"
-        Screen.Profile.route -> "Profile"
-        Screen.News.route -> "News"
-        Screen.Chat.route -> otherUser?.username ?: "Chat"
-        else -> ""
+    // Update current route in view model
+    LaunchedEffect(currentRoute) {
+        mainScreenViewModel.onEvent(MainScreenEvent.UpdateCurrentRoute(currentRoute))
     }
 
-    val showBackButton = currentRoute == Screen.Chat.route
-    val showBottomBar = currentRoute != Screen.Chat.route
-
-    LaunchedEffect(startInChat, currentUser, otherUser) {
-        if (startInChat && currentUser != null && otherUser != null) {
+    // Handle navigation to chat when startInChat is true (from notification)
+    LaunchedEffect(startInChat, notificationOtherUser, mainScreenState.currentUser) {
+        if (startInChat && notificationOtherUser != null && mainScreenState.currentUser != null) {
+            // Set the chat users in MainScreenViewModel
+            mainScreenViewModel.onEvent(
+                MainScreenEvent.SetChatUsers(notificationOtherUser)
+            )
             mainNavController.navigate(Screen.Chat.route)
         }
     }
 
+    // Clear selected chat when navigating away from chat
+    LaunchedEffect(currentRoute) {
+        if (currentRoute != Screen.Chat.route) {
+            mainScreenViewModel.onEvent(MainScreenEvent.ClearSelectedChat)
+        }
+    }
+
+    val title = mainScreenViewModel.getTitle(currentRoute)
+    val showBackButton = mainScreenViewModel.shouldShowBackButton(currentRoute)
+    val showBottomBar = mainScreenViewModel.shouldShowBottomBar(currentRoute)
+
     // Sign out confirmation dialog
-    if (showSignOutDialog) {
+    if (mainScreenState.showSignOutDialog) {
         AlertDialog(
-            onDismissRequest = { showSignOutDialog = false },
+            onDismissRequest = {
+                mainScreenViewModel.onEvent(MainScreenEvent.HideSignOutDialog)
+            },
             title = { Text("Sign Out") },
             text = { Text("Are you sure you want to sign out?") },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        showSignOutDialog = false
-                        // Use ChatHomeViewModel's logout function instead of AuthViewModel's signOut
+                        mainScreenViewModel.onEvent(MainScreenEvent.ConfirmSignOut)
+                        // Use ChatHomeViewModel's logout function
                         chatHomeViewModel.logout {
-                            // Navigation will be handled by the LaunchedEffect above
-                            // when auth state changes
                             android.util.Log.d("MainWithBarsScreen", "User signed out, navigating to auth")
                             rootNavController.navigate(Screen.Signin.route) {
                                 popUpTo(Screen.Main.route) { inclusive = true }
@@ -98,7 +97,9 @@ fun MainWithBarsScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showSignOutDialog = false }
+                    onClick = {
+                        mainScreenViewModel.onEvent(MainScreenEvent.HideSignOutDialog)
+                    }
                 ) {
                     Text("Cancel")
                 }
@@ -111,14 +112,14 @@ fun MainWithBarsScreen(
             CustomTopAppBar(
                 title = title,
                 onSignOut = {
-                    showSignOutDialog = true
+                    mainScreenViewModel.onEvent(MainScreenEvent.ShowSignOutDialog)
                 },
                 onHelp = { /* TODO */ },
                 showBackButton = showBackButton,
                 onBackClick = if (showBackButton) {
                     { mainNavController.navigateUp() }
                 } else null,
-                otherUser = otherUser
+                otherUser = mainScreenState.selectedOtherUser // Pass the selected user from state
             )
         },
         bottomBar = {
@@ -127,7 +128,6 @@ fun MainWithBarsScreen(
                     currentRoute = currentRoute,
                     onItemClick = { route ->
                         mainNavController.navigate(route) {
-                            // Fix: popUpTo must refer to a destination inside mainNavController's graph
                             popUpTo(mainNavController.graph.startDestinationId) {
                                 saveState = true
                             }
@@ -147,8 +147,8 @@ fun MainWithBarsScreen(
                 composable(Screen.ChatHome.route) {
                     ChatHomeScreen(
                         rootNavController = rootNavController,
-                        sharedUserViewModel = sharedUserViewModel,
-                        mainNavController = mainNavController
+                        mainNavController = mainNavController,
+                        mainScreenViewModel = mainScreenViewModel
                     )
                 }
                 composable(Screen.Profile.route) {
@@ -158,10 +158,11 @@ fun MainWithBarsScreen(
                     NewsScreen()
                 }
                 composable(Screen.Chat.route) {
-                    // Get users from shared view model
-                    currentUser?.let { current ->
-                        otherUser?.let { other ->
-                            val chatId = listOf(current.uid, other.uid).sorted().joinToString("_")
+                    // Get users from the main screen state
+                    mainScreenState.currentUser?.let { current ->
+                        mainScreenState.selectedOtherUser?.let { other ->
+                            val chatId = mainScreenViewModel.getSelectedChatId()
+                                ?: listOf(current.uid, other.uid).sorted().joinToString("_")
                             ChatScreen(
                                 chatId = chatId,
                                 currentUser = current,

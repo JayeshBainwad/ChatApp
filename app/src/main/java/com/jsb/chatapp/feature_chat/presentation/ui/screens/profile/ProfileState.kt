@@ -5,9 +5,10 @@ data class ProfileState(
     val username: String = "",
     val name: String = "",
     val phoneNumber: String = "",
+    val bio: String = "", // Add bio field
     val avatarUrl: String = "",
-    val isUsernameAvailable: Boolean? = null,
     val isLoading: Boolean = false,
-    val isSaved: Boolean = false,
     val error: String? = null,
+    val isUsernameAvailable: Boolean? = null,
+    val isSaved: Boolean = false
 )

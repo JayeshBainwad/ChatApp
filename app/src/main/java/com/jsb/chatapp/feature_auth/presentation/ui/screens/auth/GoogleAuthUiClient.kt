@@ -54,8 +54,10 @@ class GoogleAuthUiClient(
                         avatarUrl = photoUrl?.toString() ?: "",
                         phoneNumber = phoneNumber,
                         bio = "",
+                        fcmToken = "", // Will be updated later in AuthViewModel
                         lastSeen = System.currentTimeMillis(),
-                        createdAt = System.currentTimeMillis()
+                        createdAt = System.currentTimeMillis(),
+                        isOnline = true
                     )
                 },
                 errorMessage = null
@@ -67,36 +69,6 @@ class GoogleAuthUiClient(
             SignInResult(
                 data = null,
                 errorMessage = e.message
-            )
-        }
-    }
-
-    suspend fun signOut() {
-        Log.d("GoogleAuthUiClient", "Starting sign-out process")
-        try {
-            oneTapClient.signOut().await()
-            auth.signOut()
-            Log.d("GoogleAuthUiClient", "Sign-out successful")
-        } catch (e: Exception) {
-            Log.e("GoogleAuthUiClient", "Sign-out failed", e)
-            if (e is CancellationException) throw e
-        }
-    }
-
-    fun getSignedInUser(): User? {
-        val user = auth.currentUser
-        Log.d("GoogleAuth", """
-        Current Firebase User:
-        - UID: ${user?.uid ?: "null"}
-        - Email: ${user?.email ?: "null"}
-        - IsEmailVerified: ${user?.isEmailVerified ?: "null"}
-        - ProviderData: ${user?.providerData?.joinToString()}
-    """.trimIndent())
-
-        return user?.run {
-            User(
-                uid = uid,
-                email = email ?: ""
             )
         }
     }

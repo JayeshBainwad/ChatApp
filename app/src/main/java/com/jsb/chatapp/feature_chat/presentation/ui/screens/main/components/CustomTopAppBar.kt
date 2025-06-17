@@ -2,7 +2,10 @@ package com.jsb.chatapp.feature_chat.presentation.ui.screens.main.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -27,16 +30,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.jsb.chatapp.R
 import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.util.getOnlineStatusText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,18 +49,33 @@ fun CustomTopAppBar(
     // Chat screen specific parameters
     showBackButton: Boolean = false,
     onBackClick: (() -> Unit)? = null,
-    otherUser: User? = null
+    otherUser: User? = null // Back to original approach but now properly managed by ViewModel
 ) {
     TopAppBar(
         title = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Start,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = if (showBackButton) 22.sp else 26.sp,
-                modifier = if (showBackButton) Modifier.padding(start = 16.dp) else Modifier
-            )
+            Column {
+                Text(
+                    text = if (showBackButton && otherUser != null) otherUser.username else title,
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Start,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = if (showBackButton) 22.sp else 26.sp,
+                    modifier = if (showBackButton) Modifier.padding(start = 16.dp) else Modifier
+                )
+
+                if (showBackButton && onBackClick != null && otherUser != null) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = getOnlineStatusText(otherUser.isOnline ?: false, otherUser.lastSeen),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (otherUser.isOnline == true)
+                            MaterialTheme.colorScheme.onSurface
+                        else
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(start = 18.dp)
+                    )
+                }
+            }
         },
         navigationIcon = {
             if (showBackButton && onBackClick != null && otherUser != null) {
