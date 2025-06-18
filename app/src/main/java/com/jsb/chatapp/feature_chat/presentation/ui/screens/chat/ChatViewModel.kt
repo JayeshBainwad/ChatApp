@@ -72,14 +72,20 @@ class ChatViewModel @Inject constructor(
                         repository.sendMessage(chatId, message)
                     }
 
-                    FCMSender.sendPushNotification(
-                        serverUrl = "http://192.168.0.109:8080/send-notification",
-                        fcmToken = otherUserFcmToken,
-                        senderName = currentUserName,
-                        senderId = currentUserId,
-                        receiverId = otherUserId, // not used
-                        content = message.content
-                    )
+                    if (otherUserFcmToken.isNotEmpty() && otherUserFcmToken.isNotBlank()) {
+
+                        FCMSender.sendPushNotification(
+                            serverUrl = "http://192.168.0.109:8080/send-notification",
+                            fcmToken = otherUserFcmToken,
+                            senderName = currentUserName,
+                            senderId = currentUserId,
+                            receiverId = otherUserId, // not used
+                            content = message.content
+                        )
+                    } else {
+                        Log.d("FCM_DEBUG", "FCM token is empty or blank")
+                    }
+
 
                     uiState = uiState.copy(messageInput = "")
                 }

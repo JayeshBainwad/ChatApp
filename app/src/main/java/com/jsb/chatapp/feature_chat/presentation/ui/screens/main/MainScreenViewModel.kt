@@ -154,6 +154,7 @@ class MainScreenViewModel @Inject constructor(
                         selectedUserIdForChat = event.userId
                     )
                     Log.d(TAG, "Selected existing chat user: ${selectedChat.otherUser.username}")
+                    Log.d("FCM_DEBUGER", "Selected existing user: ${selectedChat.otherUser.fcmToken}")
                 } else {
                     // Chat doesn't exist, load the user from Firestore to start a new chat
                     Log.d(TAG, "No existing chat found for user $event.userId, loading user data")

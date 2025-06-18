@@ -59,7 +59,7 @@ class MyFirebaseService : FirebaseMessagingService() {
         senderName: String,
         content: String,
         senderId: String,
-        receiverId: String, // not used
+        receiverId: String,
         senderFcmToken: String
     ) {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -78,7 +78,7 @@ class MyFirebaseService : FirebaseMessagingService() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("navigateToChat", true)
             putExtra("senderId", senderId)
-            putExtra("receiverId", receiverId) // not used
+            putExtra("receiverId", receiverId)
             putExtra("senderName", senderName)
             putExtra("senderFcmToken", senderFcmToken)
         }

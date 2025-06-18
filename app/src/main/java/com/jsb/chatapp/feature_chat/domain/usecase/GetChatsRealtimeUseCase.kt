@@ -39,9 +39,14 @@ class GetChatsRealtimeUseCase @Inject constructor(
                     uid = userDoc.getString("uid") ?: "",
                     username = userDoc.getString("username") ?: "",
                     phoneNumber = userDoc.getString("phoneNumber") ?: "",
+                    fcmToken = userDoc.getString("fcmToken") ?: "",
                     createdAt = userDoc.getLong("createdAt") ?: 0L,
                     isOnline = userDoc.getBoolean("isOnline") ?: false,
-                    lastSeen = userDoc.getLong("lastSeen") ?: 0L
+                    lastSeen = userDoc.getLong("lastSeen") ?: 0L,
+                    name = userDoc.getString("name") ?: "",
+                    email = userDoc.getString("email") ?: "",
+                    bio = userDoc.getString("bio") ?: "",
+                    avatarUrl = userDoc.getString("avatarUrl") ?: ""
                 )
             } else null
         }
@@ -105,6 +110,7 @@ class GetChatsRealtimeUseCase @Inject constructor(
                                                                     "phoneNumber: ${otherUser.phoneNumber}, " +
                                                                     "uid: ${otherUser.uid}, " +
                                                                     "isOnline: ${otherUser.isOnline}, " +
+                                                                    "otherUserFcmToken: ${otherUser.fcmToken}, " +
                                                                     "lastSeen: ${otherUser.lastSeen}"
                                                         )
                                                     }
@@ -139,6 +145,7 @@ class GetChatsRealtimeUseCase @Inject constructor(
                                             Log.d("GetChatsRealtimeUseCase",
                                                 "Initial chat created: " +
                                                         "${otherUser.username}, " +
+                                                        "otherUserFcmToken: ${otherUser.fcmToken}, " +
                                                         "isOnline: ${otherUser.isOnline}")
                                         }
                                     } else {

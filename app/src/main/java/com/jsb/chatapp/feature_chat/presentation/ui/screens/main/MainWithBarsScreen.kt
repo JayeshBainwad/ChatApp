@@ -1,5 +1,6 @@
 package com.jsb.chatapp.feature_chat.presentation.ui.screens.main
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -163,6 +164,7 @@ fun MainWithBarsScreen(
                         mainScreenState.selectedOtherUser?.let { other ->
                             val chatId = mainScreenViewModel.getSelectedChatId()
                                 ?: listOf(current.uid, other.uid).sorted().joinToString("_")
+                            Log.d("FCM_DEBUG", ("other user fcmToken: " + other.fcmToken))
                             ChatScreen(
                                 chatId = chatId,
                                 currentUser = current,
