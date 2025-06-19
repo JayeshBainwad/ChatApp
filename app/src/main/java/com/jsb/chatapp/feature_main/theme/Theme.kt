@@ -1,4 +1,4 @@
-package com.jsb.chatapp.theme
+package com.jsb.chatapp.feature_main.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

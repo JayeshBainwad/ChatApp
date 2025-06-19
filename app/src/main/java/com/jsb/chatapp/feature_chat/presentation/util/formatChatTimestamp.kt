@@ -1,4 +1,4 @@
-package com.jsb.chatapp.util
+package com.jsb.chatapp.feature_chat.presentation.util
 
 import java.text.SimpleDateFormat
 import java.util.*

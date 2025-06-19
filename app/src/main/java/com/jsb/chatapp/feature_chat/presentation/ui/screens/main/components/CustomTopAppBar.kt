@@ -37,8 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.jsb.chatapp.R
-import com.jsb.chatapp.feature_auth.domain.model.User
-import com.jsb.chatapp.util.getOnlineStatusText
+import com.jsb.chatapp.feature_main.main_domain.main_model.User
+import com.jsb.chatapp.feature_chat.presentation.util.getOnlineStatusText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

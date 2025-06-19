@@ -111,20 +111,22 @@ fun CustomUserCard(
                     )
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                otherUserLastMessage?.let {
-                    Text(
-                        text = it,
-                        fontSize = 14.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = if (unreadCount > 0) FontWeight.Medium else FontWeight.Normal,
-                            color = if (unreadCount > 0)
-                                MaterialTheme.colorScheme.onSurface
-                            else
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                Row {
+                    otherUserLastMessage?.let {
+                        Text(
+                            text = it,
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = if (unreadCount > 0) FontWeight.Medium else FontWeight.Normal,
+                                color = if (unreadCount > 0)
+                                    MaterialTheme.colorScheme.onSurface
+                                else
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
                         )
-                    )
+                    }
                 }
             }
 

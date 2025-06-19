@@ -3,7 +3,7 @@ package com.jsb.chatapp.feature_chat.domain.usecase
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.feature_main.main_domain.main_model.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose

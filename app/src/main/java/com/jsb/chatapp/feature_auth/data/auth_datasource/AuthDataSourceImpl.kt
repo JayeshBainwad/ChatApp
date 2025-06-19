@@ -3,12 +3,11 @@ package com.jsb.chatapp.feature_auth.data.auth_datasource
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
-import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.feature_main.main_domain.main_model.User
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
-import com.jsb.chatapp.util.Result
+import com.jsb.chatapp.feature_main.main_util.Result
 import android.util.Log
-import com.google.firebase.auth.FirebaseUser
 
 class AuthDataSourceImpl @Inject constructor(
     private val auth: FirebaseAuth,
@@ -107,39 +106,4 @@ class AuthDataSourceImpl @Inject constructor(
         Log.e("AuthDataSourceImpl", "Signup error", e)
         Result.Error(e)
     }
-
-    override suspend fun isUsernameAvailable(username: String): Boolean {
-        val snapshot = firestore
-            .collection("users")
-            .whereEqualTo("username", username)
-            .get()
-            .await()
-        return snapshot.isEmpty
-    }
-
-    override suspend fun getUserById(uid: String): Result<User> = try {
-        val doc = firestore.collection("users").document(uid).get().await()
-        val user = doc.toObject(User::class.java)
-        if (user != null) Result.Success(user) else Result.Error(Exception("User not found"))
-    } catch (e: Exception) {
-        Result.Error(e)
-    }
-
-    override suspend fun updateUserProfile(uid: String, user: User): Result<Unit> = try {
-        firestore.collection("users").document(uid).update(
-            "username", user.username,
-            "name", user.name,
-            "email", user.email,
-            "avatarUrl", user.avatarUrl,
-            "phoneNumber", user.phoneNumber,
-            "bio", user.bio,
-            "fcmToken", user.fcmToken,
-            "lastSeen", user.lastSeen,
-            "isOnline", user.isOnline
-        ).await()
-        Result.Success(Unit)
-    } catch (e: Exception) {
-        Result.Error(e)
-    }
-
 }

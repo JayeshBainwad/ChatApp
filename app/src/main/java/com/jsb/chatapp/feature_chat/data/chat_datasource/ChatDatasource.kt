@@ -1,9 +1,10 @@
 package com.jsb.chatapp.feature_chat.data.chat_datasource
 
-import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.feature_main.main_domain.main_model.User
 import com.jsb.chatapp.feature_chat.domain.model.Chat
 import com.jsb.chatapp.feature_chat.domain.model.Message
-import com.jsb.chatapp.feature_chat.domain.model.MessageStatus
+import com.jsb.chatapp.feature_main.main_util.Result
+import kotlinx.coroutines.flow.Flow
 
 interface ChatDatasource {
     suspend fun searchUsers(query: String): List<User>
@@ -13,4 +14,7 @@ interface ChatDatasource {
     suspend fun markMessagesSeen(chatId: String, messageIds: List<String>)
     suspend fun updateFcmToken(userId: String, token: String)
     suspend fun getUnreadCount(chatId: String, receiverId: String): Int
+    suspend fun isUsernameAvailable(username: String): Boolean
+    suspend fun updateUserProfile(uid: String, user: User): Result<Unit>
+    fun getChatsRealtime(currentUserId: String): Flow<List<Chat>>
 }

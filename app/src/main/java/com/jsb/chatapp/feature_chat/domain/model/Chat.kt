@@ -1,6 +1,6 @@
 package com.jsb.chatapp.feature_chat.domain.model
 
-import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.feature_main.main_domain.main_model.User
 
 data class Chat(
     val chatId: String,

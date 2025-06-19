@@ -6,11 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
-import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.feature_main.main_domain.main_model.User
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.UiEvent
 import com.jsb.chatapp.feature_chat.domain.usecase.IsUsernameAvailableUseCase
-import com.jsb.chatapp.feature_chat.domain.usecase.ProfileUseCases
-import com.jsb.chatapp.util.Result
+import com.jsb.chatapp.feature_chat.domain.usecase.UpdateUserProfileUseCase
+import com.jsb.chatapp.feature_main.main_domain.main_usecase.GetCurrentUserUseCase
+import com.jsb.chatapp.feature_main.main_util.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,7 +26,8 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     private val auth: FirebaseAuth,
     private val isUsernameAvailableUseCase: IsUsernameAvailableUseCase,
-    private val profileUseCases: ProfileUseCases
+    private val updateUserProfileUseCase: UpdateUserProfileUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase
 ) : ViewModel() {
 
     companion object {
@@ -98,7 +100,7 @@ class ProfileViewModel @Inject constructor(
         _state.value = _state.value.copy(isLoading = true, error = null)
 
         viewModelScope.launch {
-            when (val result = profileUseCases.getCurrentUser(uid)) {
+            when (val result = getCurrentUserUseCase(uid)) {
                 is Result.Success -> {
                     val user = result.data
                     currentUser = user // Store the current user
@@ -159,7 +161,7 @@ class ProfileViewModel @Inject constructor(
         _state.value = _state.value.copy(isLoading = true, error = null)
 
         viewModelScope.launch {
-            when (val result = profileUseCases.updateUserProfile(uid, user)) {
+            when (val result = updateUserProfileUseCase(uid, user)) {
                 is Result.Success -> {
                     currentUser = user // Update the stored current user
                     _state.value = _state.value.copy(isLoading = false, isSaved = true)

@@ -1,4 +1,4 @@
-package com.jsb.chatapp
+package com.jsb.chatapp.feature_main.main_navigation
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")

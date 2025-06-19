@@ -54,7 +54,7 @@ fun CustomSearchBar(
         shape = RoundedCornerShape(24.dp),
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp)
+            .height(54.dp)
             .onFocusChanged { isFocused = it.isFocused },
         colors = TextFieldDefaults.colors(
             focusedTextColor = colors.onSurface,

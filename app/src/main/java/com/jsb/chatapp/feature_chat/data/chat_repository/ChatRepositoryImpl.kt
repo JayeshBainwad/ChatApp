@@ -1,10 +1,11 @@
 package com.jsb.chatapp.feature_chat.data.chat_repository
 
-import com.jsb.chatapp.feature_auth.domain.model.User
 import com.jsb.chatapp.feature_chat.data.chat_datasource.ChatDatasource
 import com.jsb.chatapp.feature_chat.domain.model.Chat
 import com.jsb.chatapp.feature_chat.domain.model.Message
-import com.jsb.chatapp.feature_chat.domain.model.MessageStatus
+import com.jsb.chatapp.feature_main.main_domain.main_model.User
+import com.jsb.chatapp.feature_main.main_util.Result
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class ChatRepositoryImpl @Inject constructor(
@@ -31,5 +32,17 @@ class ChatRepositoryImpl @Inject constructor(
 
     override suspend fun getUnreadCount(chatId: String, receiverId: String): Int {
         return chatDatasource.getUnreadCount(chatId, receiverId)
+    }
+
+    override suspend fun isUsernameAvailable(username: String): Boolean {
+        return chatDatasource.isUsernameAvailable(username)
+    }
+
+    override suspend fun updateUserProfile(uid: String, user: User): Result<Unit> {
+        return chatDatasource.updateUserProfile(uid, user)
+    }
+
+    override fun getChatsRealtime(currentUserId: String): Flow<List<Chat>> {
+        return chatDatasource.getChatsRealtime(currentUserId)
     }
 }

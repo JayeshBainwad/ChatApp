@@ -13,20 +13,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.jsb.chatapp.Screen
+import com.jsb.chatapp.feature_main.main_navigation.Screen
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.components.AuthButton
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.components.AuthTextField
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.components.GoogleAuthButton
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.components.OrSignInWithDivider
-import com.jsb.chatapp.theme.ChatAppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

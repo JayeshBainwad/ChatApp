@@ -20,8 +20,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.jsb.chatapp.Screen
-import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.feature_main.main_navigation.Screen
+import com.jsb.chatapp.feature_main.main_domain.main_model.User
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.ChatScreen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home.ChatHomeScreen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home.ChatHomeViewModel

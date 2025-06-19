@@ -1,6 +1,5 @@
 package com.jsb.chatapp.feature_chat.data.fcm
 
-import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -8,12 +7,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.jsb.chatapp.MainActivity
+import com.jsb.chatapp.feature_main.main_navigation.MainActivity
 import com.jsb.chatapp.R
 import com.jsb.chatapp.feature_chat.domain.usecase.UpdateFcmTokenUseCase
 import dagger.hilt.android.AndroidEntryPoint

@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.jsb.chatapp.R
-import com.jsb.chatapp.Screen
+import com.jsb.chatapp.feature_main.main_navigation.Screen
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.AuthViewModel
 import com.jsb.chatapp.feature_auth.presentation.utils.UserPreferences
 import kotlinx.coroutines.delay

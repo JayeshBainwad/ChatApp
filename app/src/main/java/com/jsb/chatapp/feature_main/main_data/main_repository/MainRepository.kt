@@ -1,7 +1,7 @@
-package com.jsb.chatapp.main_data.main_repository
+package com.jsb.chatapp.feature_main.main_data.main_repository
 
-import com.jsb.chatapp.main_domain.main_model.User
-import com.jsb.chatapp.util.Result
+import com.jsb.chatapp.feature_main.main_domain.main_model.User
+import com.jsb.chatapp.feature_main.main_util.Result
 
 interface MainRepository {
     suspend fun getUserById(uid: String): Result<User>

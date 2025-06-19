@@ -1,4 +1,4 @@
-package com.jsb.chatapp.util
+package com.jsb.chatapp.feature_chat.presentation.util
 
 import android.view.ViewTreeObserver
 import androidx.compose.runtime.Composable

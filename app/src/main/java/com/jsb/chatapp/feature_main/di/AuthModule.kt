@@ -1,4 +1,4 @@
-package com.jsb.chatapp.di
+package com.jsb.chatapp.feature_main.di
 
 import android.content.Context
 import com.google.android.gms.auth.api.identity.Identity
@@ -17,12 +17,14 @@ import com.jsb.chatapp.feature_chat.data.chat_repository.ChatRepository
 import com.jsb.chatapp.feature_chat.data.chat_repository.ChatRepositoryImpl
 import com.jsb.chatapp.feature_chat.domain.usecase.GetChatsRealtimeUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.IsUsernameAvailableUseCase
-import com.jsb.chatapp.feature_chat.domain.usecase.ProfileUseCases
 import com.jsb.chatapp.feature_chat.domain.usecase.SearchUserRealtimeUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.UpdateFcmTokenUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.UpdateUserProfileUseCase
-import com.jsb.chatapp.main_data.main_repository.MainRepository
-import com.jsb.chatapp.main_domain.main_usecase.GetCurrentUserUseCase
+import com.jsb.chatapp.feature_main.main_data.main_datasource.MainDataSource
+import com.jsb.chatapp.feature_main.main_data.main_datasource.MainDataSourceImpl
+import com.jsb.chatapp.feature_main.main_data.main_repository.MainRepository
+import com.jsb.chatapp.feature_main.main_data.main_repository.MainRepositoryImpl
+import com.jsb.chatapp.feature_main.main_domain.main_usecase.GetCurrentUserUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -58,6 +60,18 @@ abstract class AuthModule {
     abstract fun bindChatDataSource(
         chatDatasourceImpl: ChatDatasourceImpl
     ): ChatDatasource
+
+    @Binds
+    @Singleton
+    abstract fun bindMainRepository(
+        mainRepositoryImpl: MainRepositoryImpl
+    ): MainRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMainDataSource(
+        mainDataSourceImpl: MainDataSourceImpl
+    ): MainDataSource
 
     companion object {
         @Provides
@@ -95,18 +109,6 @@ abstract class AuthModule {
             @ApplicationContext context: Context
         ): UserPreferences {
             return UserPreferences(context)
-        }
-
-        @Provides
-        @Singleton
-        fun provideProfileUseCases(
-            mainRrepository: MainRepository,
-            chatRepository: ChatRepository
-        ): ProfileUseCases {
-            return ProfileUseCases(
-                getCurrentUser = GetCurrentUserUseCase(mainRrepository),
-                updateUserProfile = UpdateUserProfileUseCase(chatRepository)
-            )
         }
 
         @Provides

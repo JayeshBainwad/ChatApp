@@ -10,14 +10,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.feature_main.main_domain.main_model.User
 import com.jsb.chatapp.feature_auth.presentation.utils.UserPreferences
 import com.jsb.chatapp.feature_chat.domain.model.Chat
-import com.jsb.chatapp.feature_chat.domain.usecase.ChatUseCases
 import com.jsb.chatapp.feature_chat.domain.usecase.SearchUserRealtimeUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.GetChatsRealtimeUseCase
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.UserChatInfo
-import com.jsb.chatapp.util.UserStatusManager
+import com.jsb.chatapp.feature_main.main_util.UserStatusManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
@@ -31,7 +30,6 @@ class ChatHomeViewModel @Inject constructor(
     private val userPreferences: UserPreferences,
     private val firebaseAuth: FirebaseAuth,
     private val searchUserRealtimeUseCase: SearchUserRealtimeUseCase, // Updated to use real-time search
-    private val chatUseCases: ChatUseCases,
     private val getChatsRealtimeUseCase: GetChatsRealtimeUseCase,
     private val firestore: FirebaseFirestore,
     private val userStatusManager: UserStatusManager

@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">ChatApp</string>
-    <string name="web_client_id">775327461279-6k1polv86n4brmtj1n6nvcu98t4fdamh.apps.googleusercontent.com</string>
+    <string name="web_client_id">Your_Web_Client_ID</string>
 </resources>

@@ -75,7 +75,7 @@ class ChatViewModel @Inject constructor(
                     if (otherUserFcmToken.isNotEmpty() && otherUserFcmToken.isNotBlank()) {
 
                         FCMSender.sendPushNotification(
-                            serverUrl = "http://192.168.0.109:8080/send-notification",
+                            serverUrl = "http://<Your_PC_IP_Address>:<Port>/send-notification",
                             fcmToken = otherUserFcmToken,
                             senderName = currentUserName,
                             senderId = currentUserId,

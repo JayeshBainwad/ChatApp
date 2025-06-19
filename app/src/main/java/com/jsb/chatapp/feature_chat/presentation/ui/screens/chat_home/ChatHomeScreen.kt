@@ -25,12 +25,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.jsb.chatapp.Screen
+import com.jsb.chatapp.feature_main.main_navigation.Screen
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home.components.CustomSearchBar
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home.components.CustomUserCard
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.main.MainScreenEvent
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.main.MainScreenViewModel
-import com.jsb.chatapp.util.formatChatTimestamp
+import com.jsb.chatapp.feature_chat.presentation.util.formatChatTimestamp
 
 @SuppressLint("UnrememberedMutableState", "UnrememberedGetBackStackEntry")
 @Composable

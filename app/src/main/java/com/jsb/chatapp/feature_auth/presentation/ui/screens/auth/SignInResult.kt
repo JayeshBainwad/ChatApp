@@ -1,6 +1,6 @@
 package com.jsb.chatapp.feature_auth.presentation.ui.screens.auth
 
-import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.feature_main.main_domain.main_model.User
 
 
 data class SignInResult(
