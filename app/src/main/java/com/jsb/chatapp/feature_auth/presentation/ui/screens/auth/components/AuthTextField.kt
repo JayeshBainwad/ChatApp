@@ -2,8 +2,6 @@ package com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.components
 
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -17,7 +15,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jsb.chatapp.R
-import com.jsb.chatapp.feature_main.theme.ChatAppTheme
+import com.jsb.chatapp.feature_core.theme.ChatAppTheme
 
 @Composable
 fun AuthTextField(

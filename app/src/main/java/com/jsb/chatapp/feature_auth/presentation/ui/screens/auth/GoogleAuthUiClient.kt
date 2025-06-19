@@ -10,7 +10,7 @@ import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.jsb.chatapp.feature_main.main_domain.main_model.User
+import com.jsb.chatapp.feature_core.core_domain.main_model.User
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 import com.jsb.chatapp.R

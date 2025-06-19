@@ -3,8 +3,8 @@ package com.jsb.chatapp.feature_chat.data.chat_repository
 import com.jsb.chatapp.feature_chat.data.chat_datasource.ChatDatasource
 import com.jsb.chatapp.feature_chat.domain.model.Chat
 import com.jsb.chatapp.feature_chat.domain.model.Message
-import com.jsb.chatapp.feature_main.main_domain.main_model.User
-import com.jsb.chatapp.feature_main.main_util.Result
+import com.jsb.chatapp.feature_core.core_domain.main_model.User
+import com.jsb.chatapp.feature_core.main_util.Result
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

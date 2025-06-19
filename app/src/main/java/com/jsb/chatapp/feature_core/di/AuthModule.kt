@@ -1,4 +1,4 @@
-package com.jsb.chatapp.feature_main.di
+package com.jsb.chatapp.feature_core.di
 
 import android.content.Context
 import com.google.android.gms.auth.api.identity.Identity
@@ -20,11 +20,11 @@ import com.jsb.chatapp.feature_chat.domain.usecase.IsUsernameAvailableUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.SearchUserRealtimeUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.UpdateFcmTokenUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.UpdateUserProfileUseCase
-import com.jsb.chatapp.feature_main.main_data.main_datasource.MainDataSource
-import com.jsb.chatapp.feature_main.main_data.main_datasource.MainDataSourceImpl
-import com.jsb.chatapp.feature_main.main_data.main_repository.MainRepository
-import com.jsb.chatapp.feature_main.main_data.main_repository.MainRepositoryImpl
-import com.jsb.chatapp.feature_main.main_domain.main_usecase.GetCurrentUserUseCase
+import com.jsb.chatapp.feature_core.core_data.main_datasource.MainDataSource
+import com.jsb.chatapp.feature_core.core_data.main_datasource.MainDataSourceImpl
+import com.jsb.chatapp.feature_core.core_data.main_repository.MainRepository
+import com.jsb.chatapp.feature_core.core_data.main_repository.MainRepositoryImpl
+import com.jsb.chatapp.feature_core.core_domain.main_usecase.GetCurrentUserUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

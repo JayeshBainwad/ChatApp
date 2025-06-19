@@ -1,4 +1,4 @@
-package com.jsb.chatapp.feature_main.main_navigation
+package com.jsb.chatapp.feature_core.core_navigation
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -13,15 +13,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
-import com.jsb.chatapp.feature_main.main_domain.main_model.User
+import com.jsb.chatapp.feature_core.core_domain.main_model.User
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.SignInScreen
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.SignupScreen
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.splash.SplashScreen
-import com.jsb.chatapp.feature_main.main_domain.main_usecase.GetCurrentUserUseCase
+import com.jsb.chatapp.feature_core.core_domain.main_usecase.GetCurrentUserUseCase
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.main.MainWithBarsScreen
-import com.jsb.chatapp.feature_main.theme.ChatAppTheme
-import com.jsb.chatapp.feature_main.main_util.AppLifecycleObserver
-import com.jsb.chatapp.feature_main.main_util.RequestPermission
+import com.jsb.chatapp.feature_core.theme.ChatAppTheme
+import com.jsb.chatapp.feature_core.main_util.AppLifecycleObserver
+import com.jsb.chatapp.feature_core.main_util.RequestPermission
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

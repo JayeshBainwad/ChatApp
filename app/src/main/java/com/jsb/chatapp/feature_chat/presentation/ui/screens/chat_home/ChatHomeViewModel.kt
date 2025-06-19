@@ -10,13 +10,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.jsb.chatapp.feature_main.main_domain.main_model.User
+import com.jsb.chatapp.feature_core.core_domain.main_model.User
 import com.jsb.chatapp.feature_auth.presentation.utils.UserPreferences
 import com.jsb.chatapp.feature_chat.domain.model.Chat
 import com.jsb.chatapp.feature_chat.domain.usecase.SearchUserRealtimeUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.GetChatsRealtimeUseCase
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.UserChatInfo
-import com.jsb.chatapp.feature_main.main_util.UserStatusManager
+import com.jsb.chatapp.feature_core.main_util.UserStatusManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch

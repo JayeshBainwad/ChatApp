@@ -1,8 +1,8 @@
-package com.jsb.chatapp.feature_main.main_data.main_repository
+package com.jsb.chatapp.feature_core.core_data.main_repository
 
-import com.jsb.chatapp.feature_main.main_data.main_datasource.MainDataSource
-import com.jsb.chatapp.feature_main.main_domain.main_model.User
-import com.jsb.chatapp.feature_main.main_util.Result
+import com.jsb.chatapp.feature_core.core_data.main_datasource.MainDataSource
+import com.jsb.chatapp.feature_core.core_domain.main_model.User
+import com.jsb.chatapp.feature_core.main_util.Result
 import javax.inject.Inject
 
 class MainRepositoryImpl @Inject constructor(

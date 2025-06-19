@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.jsb.chatapp.feature_main.main_navigation.Screen
+import com.jsb.chatapp.feature_core.core_navigation.Screen
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.components.AuthButton
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.components.AuthTextField
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.components.GoogleAuthButton

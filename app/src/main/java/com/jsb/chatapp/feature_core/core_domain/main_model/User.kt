@@ -1,4 +1,4 @@
-package com.jsb.chatapp.feature_main.main_domain.main_model
+package com.jsb.chatapp.feature_core.core_domain.main_model
 
 data class User(
     val uid: String = "", // Firebase UID

@@ -1,4 +1,4 @@
-package com.jsb.chatapp.feature_main.theme
+package com.jsb.chatapp.feature_core.theme
 
 import androidx.compose.ui.graphics.Color
 

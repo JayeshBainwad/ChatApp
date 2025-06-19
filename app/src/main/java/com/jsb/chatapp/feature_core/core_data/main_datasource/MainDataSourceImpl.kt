@@ -1,9 +1,9 @@
-package com.jsb.chatapp.feature_main.main_data.main_datasource
+package com.jsb.chatapp.feature_core.core_data.main_datasource
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.jsb.chatapp.feature_main.main_domain.main_model.User
-import com.jsb.chatapp.feature_main.main_util.Result
+import com.jsb.chatapp.feature_core.core_domain.main_model.User
+import com.jsb.chatapp.feature_core.main_util.Result
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 

@@ -6,12 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
-import com.jsb.chatapp.feature_main.main_domain.main_model.User
+import com.jsb.chatapp.feature_core.core_domain.main_model.User
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.UiEvent
 import com.jsb.chatapp.feature_chat.domain.usecase.IsUsernameAvailableUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.UpdateUserProfileUseCase
-import com.jsb.chatapp.feature_main.main_domain.main_usecase.GetCurrentUserUseCase
-import com.jsb.chatapp.feature_main.main_util.Result
+import com.jsb.chatapp.feature_core.core_domain.main_usecase.GetCurrentUserUseCase
+import com.jsb.chatapp.feature_core.main_util.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow

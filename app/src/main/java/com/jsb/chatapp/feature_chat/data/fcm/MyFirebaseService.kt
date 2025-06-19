@@ -11,7 +11,7 @@ import androidx.core.app.NotificationCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.jsb.chatapp.feature_main.main_navigation.MainActivity
+import com.jsb.chatapp.feature_core.core_navigation.MainActivity
 import com.jsb.chatapp.R
 import com.jsb.chatapp.feature_chat.domain.usecase.UpdateFcmTokenUseCase
 import dagger.hilt.android.AndroidEntryPoint

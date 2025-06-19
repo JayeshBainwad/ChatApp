@@ -3,10 +3,10 @@ package com.jsb.chatapp.feature_auth.data.auth_datasource
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
-import com.jsb.chatapp.feature_main.main_domain.main_model.User
+import com.jsb.chatapp.feature_core.core_domain.main_model.User
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
-import com.jsb.chatapp.feature_main.main_util.Result
+import com.jsb.chatapp.feature_core.main_util.Result
 import android.util.Log
 
 class AuthDataSourceImpl @Inject constructor(

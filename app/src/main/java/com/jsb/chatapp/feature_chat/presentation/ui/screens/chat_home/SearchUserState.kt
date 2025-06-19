@@ -1,6 +1,6 @@
 package com.jsb.chatapp.feature_chat.presentation.ui.screens.chat_home
 
-import com.jsb.chatapp.feature_main.main_domain.main_model.User
+import com.jsb.chatapp.feature_core.core_domain.main_model.User
 
 // SearchUserState.kt
 data class SearchUserState(

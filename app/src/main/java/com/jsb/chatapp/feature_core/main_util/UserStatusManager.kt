@@ -1,4 +1,4 @@
-package com.jsb.chatapp.feature_main.main_util
+package com.jsb.chatapp.feature_core.main_util
 
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore

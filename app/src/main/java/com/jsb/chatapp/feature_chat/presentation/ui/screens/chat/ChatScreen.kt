@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.jsb.chatapp.R
-import com.jsb.chatapp.feature_main.main_domain.main_model.User
+import com.jsb.chatapp.feature_core.core_domain.main_model.User
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.components.MessageCard
 import com.jsb.chatapp.feature_chat.presentation.util.rememberImeState
 import kotlinx.coroutines.delay
