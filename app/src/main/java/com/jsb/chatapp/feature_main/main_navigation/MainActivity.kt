@@ -13,19 +13,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
-import com.jsb.chatapp.feature_auth.domain.model.User
+import com.jsb.chatapp.main_domain.main_model.User
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.SignInScreen
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.SignupScreen
 import com.jsb.chatapp.feature_auth.presentation.ui.screens.splash.SplashScreen
-import com.jsb.chatapp.feature_chat.domain.usecase.GetCurrentUserUseCase
+import com.jsb.chatapp.main_domain.main_usecase.GetCurrentUserUseCase
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.main.MainWithBarsScreen
 import com.jsb.chatapp.theme.ChatAppTheme
 import com.jsb.chatapp.util.AppLifecycleObserver
 import com.jsb.chatapp.util.RequestPermission
-import com.jsb.chatapp.util.Result
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint

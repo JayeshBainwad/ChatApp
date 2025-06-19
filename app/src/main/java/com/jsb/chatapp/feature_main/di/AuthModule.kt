@@ -15,16 +15,14 @@ import com.jsb.chatapp.feature_chat.data.chat_datasource.ChatDatasource
 import com.jsb.chatapp.feature_chat.data.chat_datasource.ChatDatasourceImpl
 import com.jsb.chatapp.feature_chat.data.chat_repository.ChatRepository
 import com.jsb.chatapp.feature_chat.data.chat_repository.ChatRepositoryImpl
-import com.jsb.chatapp.feature_chat.domain.usecase.ChatUseCases
-import com.jsb.chatapp.feature_chat.domain.usecase.GetChatsForUserUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.GetChatsRealtimeUseCase
-import com.jsb.chatapp.feature_chat.domain.usecase.GetCurrentUserUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.IsUsernameAvailableUseCase
-import com.jsb.chatapp.feature_chat.domain.usecase.ListenForMessagesUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.ProfileUseCases
 import com.jsb.chatapp.feature_chat.domain.usecase.SearchUserRealtimeUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.UpdateFcmTokenUseCase
 import com.jsb.chatapp.feature_chat.domain.usecase.UpdateUserProfileUseCase
+import com.jsb.chatapp.main_data.main_repository.MainRepository
+import com.jsb.chatapp.main_domain.main_usecase.GetCurrentUserUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -101,31 +99,36 @@ abstract class AuthModule {
 
         @Provides
         @Singleton
-        fun provideChatUseCases(
-            getChatsForUser: GetChatsForUserUseCase,
-            listenForMessages: ListenForMessagesUseCase
-        ): ChatUseCases {
-            return ChatUseCases(
-                getChatsForUser = getChatsForUser,
-                listenForMessages = listenForMessages
+        fun provideProfileUseCases(
+            mainRrepository: MainRepository,
+            chatRepository: ChatRepository
+        ): ProfileUseCases {
+            return ProfileUseCases(
+                getCurrentUser = GetCurrentUserUseCase(mainRrepository),
+                updateUserProfile = UpdateUserProfileUseCase(chatRepository)
             )
         }
 
         @Provides
         @Singleton
-        fun provideProfileUseCases(
-            repository: AuthRepository
-        ): ProfileUseCases {
-            return ProfileUseCases(
-                getCurrentUser = GetCurrentUserUseCase(repository),
-                updateUserProfile = UpdateUserProfileUseCase(repository)
-            )
+        fun provideGetCurrentUserUseCase (
+            mainRrepository: MainRepository
+        ): GetCurrentUserUseCase {
+            return GetCurrentUserUseCase(mainRrepository)
+        }
+
+        @Provides
+        @Singleton
+        fun provideUpdateUserProfileUseCase (
+            chatRepository: ChatRepository
+        ): UpdateUserProfileUseCase {
+            return UpdateUserProfileUseCase(chatRepository)
         }
 
         @Provides
         @Singleton
         fun provideIsUsernameAvailableUseCase(
-            repository: AuthRepository
+            repository: ChatRepository
         ): IsUsernameAvailableUseCase {
             return IsUsernameAvailableUseCase(repository)
         }
@@ -147,9 +150,9 @@ abstract class AuthModule {
         @Provides
         @Singleton
         fun provideGetChatsForUserUseCase(
-            firestore: FirebaseFirestore
+            chatRepository: ChatRepository
         ): GetChatsRealtimeUseCase {
-            return GetChatsRealtimeUseCase(firestore)
+            return GetChatsRealtimeUseCase(chatRepository)
         }
     }
 }
