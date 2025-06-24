@@ -62,6 +62,8 @@ class MainScreenViewModel @Inject constructor(
 
                     // Start listening to chats for real-time updates
                     startChatsListener(currentUserId)
+                } else {
+                    Log.e(TAG, "Current user document does not exist")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading current user", e)
@@ -115,7 +117,9 @@ class MainScreenViewModel @Inject constructor(
                 .await()
 
             if (userDoc.exists()) {
-                userDoc.toObject(User::class.java)
+                val user = userDoc.toObject(User::class.java)
+                Log.d(TAG, "Loaded user by ID: ${user?.username} (${user?.uid})")
+                user
             } else {
                 Log.w(TAG, "User with ID $userId not found")
                 null
@@ -141,6 +145,8 @@ class MainScreenViewModel @Inject constructor(
                 _state.value = _state.value.copy(currentRoute = event.route)
             }
             is MainScreenEvent.SelectChatUser -> {
+                Log.d(TAG, "SelectChatUser event for user ID: ${event.userId}")
+
                 // First, try to find the user from available chats
                 val selectedChat = _state.value.availableChats.find {
                     it.otherUser.uid == event.userId
@@ -154,10 +160,10 @@ class MainScreenViewModel @Inject constructor(
                         selectedUserIdForChat = event.userId
                     )
                     Log.d(TAG, "Selected existing chat user: ${selectedChat.otherUser.username}")
-                    Log.d("FCM_DEBUGER", "Selected existing user: ${selectedChat.otherUser.fcmToken}")
+                    Log.d(TAG, "Selected existing user FCM: ${selectedChat.otherUser.fcmToken}")
                 } else {
                     // Chat doesn't exist, load the user from Firestore to start a new chat
-                    Log.d(TAG, "No existing chat found for user $event.userId, loading user data")
+                    Log.d(TAG, "No existing chat found for user ${event.userId}, loading user data")
                     viewModelScope.launch {
                         val otherUser = loadUserById(event.userId)
                         if (otherUser != null) {
@@ -173,6 +179,7 @@ class MainScreenViewModel @Inject constructor(
                                 selectedUserIdForChat = event.userId
                             )
                             Log.d(TAG, "Loaded user for new chat: ${otherUser.username}")
+                            Log.d(TAG, "Generated chat ID: $newChatId")
                         } else {
                             Log.e(TAG, "Failed to load user data for ID: ${event.userId}")
                         }
@@ -180,14 +187,27 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
             is MainScreenEvent.SetChatUsers -> {
-                // For direct user setting (like from notifications)
+                Log.d(TAG, "SetChatUsers event for user: ${event.otherUser.username}")
+
+                // Generate chat ID automatically
+                val chatId = run {
+                    val currentUserId = _state.value.currentUser?.uid
+                    if (currentUserId != null) {
+                        listOf(currentUserId, event.otherUser.uid).sorted().joinToString("_")
+                    } else null
+                }
+
                 _state.value = _state.value.copy(
                     selectedOtherUser = event.otherUser,
-                    selectedChatId = event.chatId,
+                    selectedChatId = chatId,
                     selectedUserIdForChat = event.otherUser.uid
                 )
+
+                Log.d(TAG, "Set chat users - Other user: ${event.otherUser.username}")
+                Log.d(TAG, "Set chat users - Chat ID: $chatId")
             }
             is MainScreenEvent.ClearSelectedChat -> {
+                Log.d(TAG, "Clearing selected chat")
                 _state.value = _state.value.copy(
                     selectedOtherUser = null,
                     selectedChatId = null,

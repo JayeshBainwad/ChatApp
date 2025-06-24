@@ -34,11 +34,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.jsb.chatapp.R
+import com.jsb.chatapp.feature_chat.data.fcm.NotificationReplyReceiver
 import com.jsb.chatapp.feature_core.core_domain.main_model.User
 import com.jsb.chatapp.feature_chat.presentation.ui.screens.chat.components.MessageCard
 import com.jsb.chatapp.feature_chat.presentation.util.rememberImeState
@@ -47,12 +49,11 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ChatScreen(
-    chatId: String,
     currentUser: User,
     otherUser: User,
-    navController: NavController,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
+    val chatId = otherUser.uid + currentUser.uid
     val state = viewModel.uiState
     val colors = MaterialTheme.colorScheme
     val listState = rememberLazyListState()
@@ -68,12 +69,21 @@ fun ChatScreen(
     // Track previous keyboard state to detect transitions
     var previousKeyboardState by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
+
+    // Clear notification when chat screen opens
+    LaunchedEffect(Unit) {
+        NotificationReplyReceiver.clearConversationAndNotification(context, chatId)
+    }
+
     LaunchedEffect(currentUser.uid, otherUser.uid) {
         viewModel.initChat(
             currentUserId = currentUser.uid,
             currentUserName = currentUser.username,
             otherUserId = otherUser.uid,
-            otherUserFcmToken = otherUser.fcmToken
+            otherUserFcmToken = otherUser.fcmToken,
+            currentUserFcmToken = currentUser.fcmToken,
+            otherUserName = otherUser.username
         )
     }
 

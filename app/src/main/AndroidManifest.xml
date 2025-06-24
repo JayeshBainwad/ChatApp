@@ -35,6 +35,13 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        <receiver
+            android:name=".feature_chat.data.fcm.NotificationReplyReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.jsb.chatapp.REPLY_ACTION" />
+            </intent-filter>
+        </receiver>
 
     </application>
 

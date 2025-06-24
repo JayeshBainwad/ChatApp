@@ -2,6 +2,7 @@ package com.jsb.chatapp.feature_chat.data.chat_datasource
 
 import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -40,6 +41,18 @@ class ChatDatasourceImpl @Inject constructor(
     override suspend fun sendMessage(chatId: String, message: Message) {
         val chatRef = firestore.collection("chats").document(chatId)
         val messageRef = chatRef.collection("messages").document(message.messageId)
+
+        // Use server timestamp instead of client time
+        val timestamp = FieldValue.serverTimestamp()
+
+        val messageData = hashMapOf(
+            "senderId" to message.senderId,
+            "receiverId" to message.receiverId,
+            "content" to message.content,
+            "senderName" to message.senderName,
+            "status" to message.status.name,
+            "timestamp" to timestamp // Server timestamp
+        )
 
         firestore.runBatch { batch ->
             batch.set(messageRef, message)

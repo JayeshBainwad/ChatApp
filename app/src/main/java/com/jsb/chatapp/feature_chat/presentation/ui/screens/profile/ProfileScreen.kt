@@ -43,7 +43,6 @@ import com.jsb.chatapp.feature_auth.presentation.ui.screens.auth.UiEvent
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    navController: NavController,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()

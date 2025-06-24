@@ -53,18 +53,34 @@ fun MainWithBarsScreen(
     // Handle navigation to chat when startInChat is true (from notification)
     LaunchedEffect(startInChat, notificationOtherUser, mainScreenState.currentUser) {
         if (startInChat && notificationOtherUser != null && mainScreenState.currentUser != null) {
-            // Set the chat users in MainScreenViewModel
+            Log.d("FCM_DEBUG", "MainWithBarsScreen - Setting chat users and navigating")
+
             mainScreenViewModel.onEvent(
-                MainScreenEvent.SetChatUsers(notificationOtherUser)
+                MainScreenEvent.SetChatUsers(
+                    otherUser = notificationOtherUser
+                )
             )
-            mainNavController.navigate(Screen.Chat.route)
+
+            mainNavController.navigate(Screen.Chat.route) {
+                popUpTo(Screen.ChatHome.route) { inclusive = false }
+                launchSingleTop = true
+            }
         }
     }
 
     // Clear selected chat when navigating away from chat
+    // Update the clearing LaunchedEffect:
     LaunchedEffect(currentRoute) {
-        if (currentRoute != Screen.Chat.route) {
+        if (currentRoute != null && currentRoute != Screen.Chat.route) {
+            Log.d("FCM_DEBUG", "MainWithBarsScreen - Clearing selected chat, current route: $currentRoute")
             mainScreenViewModel.onEvent(MainScreenEvent.ClearSelectedChat)
+        }
+    }
+
+    // Wait for current user to be loaded before proceeding
+    LaunchedEffect(mainScreenState.currentUser) {
+        if (mainScreenState.currentUser != null) {
+            Log.d("FCM_DEBUG", "MainWithBarsScreen - Current user loaded: ${mainScreenState.currentUser?.username}")
         }
     }
 
@@ -86,7 +102,7 @@ fun MainWithBarsScreen(
                         mainScreenViewModel.onEvent(MainScreenEvent.ConfirmSignOut)
                         // Use ChatHomeViewModel's logout function
                         chatHomeViewModel.logout {
-                            android.util.Log.d("MainWithBarsScreen", "User signed out, navigating to auth")
+                            Log.d("MainWithBarsScreen", "User signed out, navigating to auth")
                             rootNavController.navigate(Screen.Signin.route) {
                                 popUpTo(Screen.Main.route) { inclusive = true }
                             }
@@ -118,7 +134,11 @@ fun MainWithBarsScreen(
                 onHelp = { /* TODO */ },
                 showBackButton = showBackButton,
                 onBackClick = if (showBackButton) {
-                    { mainNavController.navigateUp() }
+                    {
+                        // Clear selected chat when going back
+                        mainScreenViewModel.onEvent(MainScreenEvent.ClearSelectedChat)
+                        mainNavController.navigateUp()
+                    }
                 } else null,
                 otherUser = mainScreenState.selectedOtherUser // Pass the selected user from state
             )
@@ -147,33 +167,32 @@ fun MainWithBarsScreen(
             ) {
                 composable(Screen.ChatHome.route) {
                     ChatHomeScreen(
-                        rootNavController = rootNavController,
                         mainNavController = mainNavController,
                         mainScreenViewModel = mainScreenViewModel
                     )
                 }
                 composable(Screen.Profile.route) {
-                    ProfileScreen(rootNavController)
+                    ProfileScreen()
                 }
                 composable(Screen.News.route) {
                     NewsScreen()
                 }
                 composable(Screen.Chat.route) {
-                    // Get users from the main screen state
-                    mainScreenState.currentUser?.let { current ->
-                        mainScreenState.selectedOtherUser?.let { other ->
-                            val chatId = mainScreenViewModel.getSelectedChatId()
-                                ?: listOf(current.uid, other.uid).sorted().joinToString("_")
-                            Log.d("FCM_DEBUG", ("other user fcmToken: " + other.fcmToken))
-                            ChatScreen(
-                                chatId = chatId,
-                                currentUser = current,
-                                otherUser = other,
-                                navController = mainNavController
-                            )
-                        }
-                    } ?: run {
-                        // Show loading or error state if users are not available
+                    // Wait for both users to be available before showing ChatScreen
+                    val currentUser = mainScreenState.currentUser
+                    val otherUser = mainScreenState.selectedOtherUser
+
+                    Log.d("FCM_DEBUG", "ChatScreen composable - currentUser: ${currentUser?.username}")
+                    Log.d("FCM_DEBUG", "ChatScreen composable - otherUser: ${otherUser?.username}")
+                    Log.d("FCM_DEBUG", "ChatScreen composable - otherUser FCM: ${otherUser?.fcmToken}")
+
+                    if (currentUser != null && otherUser != null) {
+                        ChatScreen(
+                            currentUser = currentUser,
+                            otherUser = otherUser
+                        )
+                    } else {
+                        // Show loading state while users are being loaded
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center

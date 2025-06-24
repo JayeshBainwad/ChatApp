@@ -35,7 +35,6 @@ import com.jsb.chatapp.feature_chat.presentation.util.formatChatTimestamp
 @SuppressLint("UnrememberedMutableState", "UnrememberedGetBackStackEntry")
 @Composable
 fun ChatHomeScreen(
-    rootNavController: NavController,
     mainNavController: NavController,
     mainScreenViewModel: MainScreenViewModel, // Pass the MainScreenViewModel
     viewModel: ChatHomeViewModel = hiltViewModel()

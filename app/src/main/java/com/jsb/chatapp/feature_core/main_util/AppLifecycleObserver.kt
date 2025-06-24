@@ -18,6 +18,7 @@ class AppLifecycleObserver @Inject constructor(
 ) : DefaultLifecycleObserver {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var isInForeground = false
 
     companion object {
         private const val TAG = "AppLifecycleObserver"
@@ -44,4 +45,6 @@ class AppLifecycleObserver @Inject constructor(
             }
         }
     }
+
+    fun isAppInForeground(): Boolean = isInForeground
 }

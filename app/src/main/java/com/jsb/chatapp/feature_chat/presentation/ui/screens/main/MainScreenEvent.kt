@@ -8,6 +8,8 @@ sealed class MainScreenEvent {
     object ConfirmSignOut : MainScreenEvent()
     data class UpdateCurrentRoute(val route: String?) : MainScreenEvent()
     data class SelectChatUser(val userId: String) : MainScreenEvent()
-    data class SetChatUsers(val otherUser: User, val chatId: String? = null) : MainScreenEvent()
+    data class SetChatUsers(
+        val otherUser: User
+    ) : MainScreenEvent()
     object ClearSelectedChat : MainScreenEvent()
 }
