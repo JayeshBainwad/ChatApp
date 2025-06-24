@@ -246,7 +246,7 @@ class NotificationReplyReceiver : BroadcastReceiver() {
                 Log.d("SMART_NOTIFICATION", "Reply message ${message.messageId} not seen after 2 seconds, sending notification")
 
                 ChatViewModel.FCMSender.sendPushNotification(
-                    serverUrl = "http://192.168.0.109:8080/send-notification",
+                    serverUrl = "https://ktor-fcm-notification-chatapp.onrender.com/send-notification",
                     otherUserFcmToken = receiverFcmToken,
                     currentUserFcmToken = senderFcmToken,
                     senderName = senderName,

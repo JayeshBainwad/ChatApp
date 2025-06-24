@@ -116,7 +116,8 @@ class ChatViewModel @Inject constructor(
                 Log.d("SMART_NOTIFICATION", "Message ${message.messageId} not seen after 3 seconds, sending notification")
 
                 FCMSender.sendPushNotification(
-                    serverUrl = "http://192.168.0.109:8080/send-notification",
+//                    serverUrl = "http://192.168.0.109:8080/send-notification",
+                    serverUrl = "https://ktor-fcm-notification-chatapp.onrender.com/send-notification",
                     otherUserFcmToken = otherUserFcmToken,
                     currentUserFcmToken = currentUserFcmToken,
                     senderName = currentUserName,
