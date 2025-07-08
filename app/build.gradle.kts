@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,10 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.google.services)
+}
+
+val localProperties = Properties().apply {
+    load(rootProject.file("local.properties").inputStream())
 }
 
 android {
@@ -22,11 +28,27 @@ android {
     }
 
     buildTypes {
+        debug {
+
+            buildConfigField("String", "BASE_URL", "\"https://newsapi.org/v2/\"")
+            buildConfigField(
+                "String",
+                "NEWS_API_KEY",
+                "\"${localProperties["NEWS_API_KEY"]}\""
+            )
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
+            )
+
+            buildConfigField("String", "BASE_URL", "\"https://newsapi.org/v2/\"")
+            buildConfigField(
+                "String",
+                "NEWS_API_KEY",
+                "\"${localProperties["NEWS_API_KEY"]}\""
             )
         }
     }
@@ -38,6 +60,7 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }
@@ -86,4 +109,10 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
     // Coil for Image
     implementation(libs.coil.compose)
+    // Pagination
+    implementation (libs.androidx.paging.runtime)
+    implementation (libs.androidx.paging.compose)
+    // REST API Ktor
+    implementation(libs.bundles.ktor)
+
 }

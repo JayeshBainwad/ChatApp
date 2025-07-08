@@ -12,5 +12,4 @@ data class Message(
     val status: MessageStatus = MessageStatus.SENT
 )
 
-enum class MessageStatus { SENT, DELIVERED, SEEN }
-
+enum class MessageStatus { SENDING, SENT, RECEIVED, DELIVERED, SEEN }

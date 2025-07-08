@@ -42,18 +42,6 @@ class ChatDatasourceImpl @Inject constructor(
         val chatRef = firestore.collection("chats").document(chatId)
         val messageRef = chatRef.collection("messages").document(message.messageId)
 
-        // Use server timestamp instead of client time
-        val timestamp = FieldValue.serverTimestamp()
-
-        val messageData = hashMapOf(
-            "senderId" to message.senderId,
-            "receiverId" to message.receiverId,
-            "content" to message.content,
-            "senderName" to message.senderName,
-            "status" to message.status.name,
-            "timestamp" to timestamp // Server timestamp
-        )
-
         firestore.runBatch { batch ->
             batch.set(messageRef, message)
             batch.set(
