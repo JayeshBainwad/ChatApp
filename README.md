@@ -1,10 +1,10 @@
-# 💬 ChatApp
+# ChatApp
 
 **A real-time, modern chat application built using Kotlin, Jetpack Compose, Firebase, and Ktor.**
 
 ---
 
-## 🚀 About
+## About
 
 **ChatApp** is a full-featured, real-time messaging app built using **Jetpack Compose**, **Firebase**, and a **Ktor-powered backend** for delivering custom notifications via **Firebase Cloud Messaging (FCM)**. The project uses **Clean Architecture** with the **MVI pattern**, ensuring modularity, testability, and scalability.
 
@@ -12,34 +12,34 @@
 
 ---
 
-## 🧩 Features
+## Features
 
 | Category | Description |
 |----------|-------------|
-| 🔐 Authentication | Email/Password & Google Sign-In (One-Tap UI) |
-| 💬 Real-time Messaging | Built using Firebase Firestore with live typing indicators & user presence |
-| 📁 Media Sharing | Upload and download files/images via Firebase Storage |
-| 🔔 Push Notifications | FCM + Ktor Server for real-time delivery, with inline reply support |
-| 📰 News Integration | [In Progress] Fetch and share trending news via NewsAPI |
-| 🔄 Offline Handling | Intelligent retry logic for push messages when the receiver is offline |
+| Authentication | Email/Password & Google Sign-In (One-Tap UI) |
+| Real-time Messaging | Built using Firebase Firestore with live typing indicators & user presence |
+| Media Sharing | Upload and download files/images via Firebase Storage |
+| Push Notifications | FCM + Ktor Server for real-time delivery, with inline reply support |
+| News Integration | [In Progress] Fetch and share trending news via NewsAPI |
+| Offline Handling | Intelligent retry logic for push messages when the receiver is offline |
 
 ---
 
-## 🧱 Architecture & Tech Stack
+## Architecture & Tech Stack
 
 | Layer / Purpose | Technology / Library |
 |----------------|---------------------|
-| 👨‍💻 Language | Kotlin | 
-| 🧱 Architecture | MVI + Clean Architecture | 
-| 🖼 UI Framework | Jetpack Compose | 
-| ⚙️ Dependency Injection | Hilt | 
-| ☁️ Realtime DB | Firebase Firestore | 
-| 🔐 Authentication | Firebase Auth (Email + Google Sign-In) | 
-| ☁️ File Storage | Firebase Storage | 
-| 📬 Notifications | Firebase Cloud Messaging + Ktor Server (Render) | 
-| 🌍 News API | [NewsAPI.org](https://newsapi.org/) (In Progress) | 
-| 🧰 IDE | Android Studio Narwhal (2025.1.1) |
-| 🚀 Backend Hosting | [Render](https://render.com/) | 
+| Language | Kotlin | 
+| Architecture | MVI + Clean Architecture | 
+| UI Framework | Jetpack Compose | 
+| Dependency Injection | Hilt | 
+| Realtime DB | Firebase Firestore | 
+| Authentication | Firebase Auth (Email + Google Sign-In) | 
+| File Storage | Firebase Storage | 
+| Notifications | Firebase Cloud Messaging + Ktor Server (Render) | 
+| News API | [NewsAPI.org](https://newsapi.org/) (In Progress) | 
+| IDE | Android Studio Narwhal (2025.1.1) |
+| Backend Hosting | [Render](https://render.com/) | 
 
 ---
 
@@ -59,11 +59,11 @@
 | Firebase Storage | 21.3.x |
 | Ktor (Android Client) | 2.3.5 |
 
-> 🔍 *See `build.gradle.kts` for complete list and updates.*
+*See [`app/build.gradle.kts`](https://github.com/JayeshBainwad/ChatApp/blob/main/app/build.gradle.kts) for the complete list and updates.*
 
 ---
 
-## 🧪 Project Structure (Clean Code Architecture)
+## Project Structure (Clean Code Architecture)
 
 ```
 ChatApp/
@@ -132,9 +132,9 @@ ChatApp/
 
 ---
 
-## 🧠 Learning Outcomes
+## Learning Outcomes
 
-This project showcases your ability to:
+This project showcases my ability to:
 
 - Build real-time apps with **Firebase Firestore**
 - Implement **Custom Push Notification Handling** with a **Ktor Backend**
@@ -146,13 +146,13 @@ This project showcases your ability to:
 
 ---
 
-## 🧭 Screenshots / Demo
+## Screenshots / Demo
 
 > 📸 Coming soon: UI screenshots including Light/Dark themes, chat screen, and notification replies.
 
 ---
 
-## 🧑‍💻 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -193,12 +193,12 @@ Looking to collaborate or hire?
 
 | Type | Link |
 |------|------|
-| 💼 LinkedIn | [LinkedIn Profile](www.linkedin.com/in/jayesh-bainwad-a09b93250) |
-| 📧 Email | [Email](jbainwad@gmail.com) |
+| LinkedIn | [LinkedIn Profile](www.linkedin.com/in/jayesh-bainwad-a09b93250) |
+| Email | [Email](jbainwad@gmail.com) |
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
@@ -210,13 +210,13 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Firebase](https://firebase.google.com/) for backend services
 - [Jetpack Compose](https://developer.android.com/jetpack/compose) for modern UI
