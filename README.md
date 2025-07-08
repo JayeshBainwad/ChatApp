@@ -28,18 +28,18 @@
 ## 🧱 Architecture & Tech Stack
 
 | Layer / Purpose | Technology / Library |
-|----------------|---------------------|---------|
-| 👨‍💻 Language | Kotlin | |
-| 🧱 Architecture | MVI + Clean Architecture | |
-| 🖼 UI Framework | Jetpack Compose | |
-| ⚙️ Dependency Injection | Hilt | |
-| ☁️ Realtime DB | Firebase Firestore | |
-| 🔐 Authentication | Firebase Auth (Email + Google Sign-In) | |
-| ☁️ File Storage | Firebase Storage | |
-| 📬 Notifications | Firebase Cloud Messaging + Ktor Server (Render) | |
-| 🌍 News API | [NewsAPI.org](https://newsapi.org/) (In Progress) | |
+|----------------|---------------------|
+| 👨‍💻 Language | Kotlin | 
+| 🧱 Architecture | MVI + Clean Architecture | 
+| 🖼 UI Framework | Jetpack Compose | 
+| ⚙️ Dependency Injection | Hilt | 
+| ☁️ Realtime DB | Firebase Firestore | 
+| 🔐 Authentication | Firebase Auth (Email + Google Sign-In) | 
+| ☁️ File Storage | Firebase Storage | 
+| 📬 Notifications | Firebase Cloud Messaging + Ktor Server (Render) | 
+| 🌍 News API | [NewsAPI.org](https://newsapi.org/) (In Progress) | 
 | 🧰 IDE | Android Studio Narwhal (2025.1.1) |
-| 🚀 Backend Hosting | [Render](https://render.com/) | |
+| 🚀 Backend Hosting | [Render](https://render.com/) | 
 
 ---
 
