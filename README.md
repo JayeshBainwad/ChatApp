@@ -27,7 +27,7 @@
 
 ## 🧱 Architecture & Tech Stack
 
-| Layer / Purpose | Technology / Library | Version |
+| Layer / Purpose | Technology / Library |
 |----------------|---------------------|---------|
 | 👨‍💻 Language | Kotlin | |
 | 🧱 Architecture | MVI + Clean Architecture | |
@@ -38,7 +38,7 @@
 | ☁️ File Storage | Firebase Storage | |
 | 📬 Notifications | Firebase Cloud Messaging + Ktor Server (Render) | |
 | 🌍 News API | [NewsAPI.org](https://newsapi.org/) (In Progress) | |
-| 🧰 IDE | Android Studio Narwhal | 2025.1.1 |
+| 🧰 IDE | Android Studio Narwhal (2025.1.1) |
 | 🚀 Backend Hosting | [Render](https://render.com/) | |
 
 ---
