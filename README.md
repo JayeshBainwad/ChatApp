@@ -9,7 +9,6 @@
 **ChatApp** is a full-featured, real-time messaging app built using **Jetpack Compose**, **Firebase**, and a **Ktor-powered backend** for delivering custom notifications via **Firebase Cloud Messaging (FCM)**. The project uses **Clean Architecture** with the **MVI pattern**, ensuring modularity, testability, and scalability.
 
 
-
 ---
 
 ## Features
@@ -37,13 +36,13 @@
 | Authentication | Firebase Auth (Email + Google Sign-In) | 
 | File Storage | Firebase Storage | 
 | Notifications | Firebase Cloud Messaging + Ktor Server (Render) | 
-| News API | [NewsAPI.org](https://newsapi.org/) (In Progress) | 
+| News API | [NewsAPI](https://newsapi.org/) (In Progress) | 
 | IDE | Android Studio Narwhal (2025.1.1) |
 | Backend Hosting | [Render](https://render.com/) | 
 
 ---
 
-## 📦 Dependencies & Versions
+## Dependencies & Versions
 
 | Library | Version |
 |---------|---------|
@@ -59,7 +58,7 @@
 | Firebase Storage | 21.3.x |
 | Ktor (Android Client) | 2.3.5 |
 
-*See [`app/build.gradle.kts`](https://github.com/JayeshBainwad/ChatApp/blob/main/app/build.gradle.kts) for the complete list and updates.*
+*See [`gradle/libs.versions.toml`](https://github.com/JayeshBainwad/ChatApp/blob/master/gradle/libs.versions.toml) for the complete list and updates.*
 
 ---
 
@@ -137,12 +136,12 @@ ChatApp/
 This project showcases my ability to:
 
 - Build real-time apps with **Firebase Firestore**
-- Implement **Custom Push Notification Handling** with a **Ktor Backend**
+- Implement **Custom FCM Push Notification Handling** with a **Ktor Backend Server**
 - Design scalable apps using **MVI + Clean Architecture**
 - Use **Hilt** for effective dependency injection
-- Build UI with **Jetpack Compose**
+- Build UI with **Jetpack Compose + Material 3 Design**
 - Handle authentication securely (Google Sign-In + Email/Password)
-- Manage async push logic for **offline/online receivers**
+- Manage async push logic for **offline/online sender**
 
 ---
 
